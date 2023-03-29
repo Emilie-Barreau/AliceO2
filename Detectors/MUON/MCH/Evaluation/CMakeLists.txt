@@ -14,10 +14,14 @@ o2_add_library(MCHEvaluation
                  src/CompareTask.cxx
                  src/CompareTracks.cxx
                  src/Draw.cxx
+                 src/MinvTask.cxx
                  src/ExtendedTrack.cxx
                  src/Histos.cxx
                PUBLIC_LINK_LIBRARIES
                   O2::DataFormatsMCH
+                  O2::DetectorsRaw
+                  O2::DPLUtils
+                  O2::Framework
                   O2::MCHTracking
                   fmt::fmt)
 
@@ -26,6 +30,14 @@ o2_add_executable(compare-tracks-worfklow
                     src/compare-tracks-workflow.cxx
                   COMPONENT_NAME mch
                   PUBLIC_LINK_LIBRARIES O2::MCHEvaluation)
+                  
+o2_add_executable(minv-workflow
+                  SOURCES
+                    src/minv-workflow.cxx
+                  COMPONENT_NAME mch
+                  PUBLIC_LINK_LIBRARIES
+                    O2::MCHEvaluation
+                  )
 
 o2_target_root_dictionary(MCHEvaluation
                           HEADERS
