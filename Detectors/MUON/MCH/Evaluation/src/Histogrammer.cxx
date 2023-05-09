@@ -7,9 +7,10 @@
 
 Histogrammer::Histogrammer()
 {
+  //initializing bins and limits for histograms
   mHistos.emplace_back(new TH1F("pT", "pT", 100, 0., 16.));
-  mHistos.emplace_back(new TH1F("Eta", "Eta", 100, -5., -2.));
   mHistos.emplace_back(new TH1F("Rapidity", "Rapidity", 100, -5., -2.));
+  mHistos.emplace_back(new TH1F("Eta", "Eta", 100, -5., -2.));
   mHistos.emplace_back(new TH1F("Minv", "Minv", 80., 2., 5.));
 
   mHistos2.emplace_back(new TH2F("Minv pT", "M_{inv} depending of p_{T}", 200, 0., 16., 200, 0., 5.));
@@ -18,19 +19,28 @@ Histogrammer::Histogrammer()
 
 void Histogrammer::save(const char* filename)
 {
+  //write over the file if already created
   TFile myFile(filename, "RECREATE");
 
-  myFile.WriteObject(mHistos[0], "pT");
-  myFile.WriteObject(mHistos[1], "eta");
-  myFile.WriteObject(mHistos[2], "y");
-  myFile.WriteObject(mHistos[3], "minv");
+  //new vector indentation to know which histogram is created
+  const int pt = 0;
+  const int y = 1;
+  const int eta = 2;
+  const int minv = 3;
 
-  myFile.WriteObject(mHistos2[0], "minv with pT");
-  myFile.WriteObject(mHistos2[1], "minv with y");
+  //write the file
+  myFile.WriteObject(mHistos[pt], "pT");
+  myFile.WriteObject(mHistos[y], "y");
+  myFile.WriteObject(mHistos[eta], "eta");
+  myFile.WriteObject(mHistos[minv], "minv");
+
+  myFile.WriteObject(mHistos2[pt], "minv with pT");
+  myFile.WriteObject(mHistos2[y], "minv with y");
 }
 
 void Histogrammer::fillSingleParticleHistos(const ROOT::Math::PxPyPzMVector& lor)
 {
+  //fill 1D
   mHistos[0]->Fill(lor.Pt());
   mHistos[1]->Fill(lor.Eta());
   mHistos[2]->Fill(lor.Rapidity());
@@ -38,8 +48,8 @@ void Histogrammer::fillSingleParticleHistos(const ROOT::Math::PxPyPzMVector& lor
 
 void Histogrammer::fillDoubleParticleHistos(const ROOT::Math::PxPyPzMVector& lor1, const ROOT::Math::PxPyPzMVector& lor2)
 {
+  //fill 2D
   auto lor12 = lor1 + lor2;
-  //minv = GetInvariantMass(lor1, lor2);
   mHistos[3]->Fill(lor12.M());
   mHistos2[0]->Fill(lor12.Pt(), lor12.M());
   mHistos2[1]->Fill(lor12.Rapidity(), lor12.M());

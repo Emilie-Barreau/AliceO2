@@ -30,11 +30,10 @@ using namespace std;
 namespace o2::mch::eval
 {
 
-// ===== CONSTRUCTOR =====
 MinvTask::MinvTask(std::shared_ptr<o2::base::GRPGeomRequest> req) : mCcdbRequest(req) {}
 
-// ===== INITIALIZATION OF MAGNETIC FIELD =====
-void MinvTask::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj) 
+// initialize the magnetic field and check if it is on or not
+void MinvTask::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
 {
   if (mCcdbRequest && base::GRPGeomHelper::instance().finaliseCCDB(matcher, obj)) {
     if (matcher == framework::ConcreteDataMatcher("GLO", "GRPMAGFIELD", 0)) {
@@ -43,22 +42,21 @@ void MinvTask::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
   }
 }
 
+// function oustide classes, gives a Lorentzvector from an Extended Track
 ROOT::Math::PxPyPzMVector getLorentzVector(o2::mch::eval::ExtendedTrack t)
 {
   return ROOT::Math::PxPyPzMVector(t.P().Px(), t.P().Py(), t.P().Pz(), t.P().M());
 }
 
-// ===== OUTPUT =====
+// save and create the output
 void MinvTask::init(InitContext& ic)
 {
-  auto outputFileName = ic.options().get<std::string>("outfile"); 
+  auto outputFileName = ic.options().get<std::string>("outfile");
   o2::base::GRPGeomHelper::instance().setRequest(mCcdbRequest);
 
-  mOutputRootFile = std::make_unique<TFile>(outputFileName.c_str(), "RECREATE"); 
+  mOutputRootFile = std::make_unique<TFile>(outputFileName.c_str(), "RECREATE");
 
-  //createHistos();                                                                
-
-  auto stop = [this]() {                                                         
+  auto stop = [this]() {
     mOutputRootFile->cd();
     for (auto h : mHistos) {
       h->Write();
@@ -73,109 +71,43 @@ void MinvTask::init(InitContext& ic)
   ic.services().get<CallbackService>().set<CallbackService::Id::Stop>(stop);
 }
 
-// ===== INITIALIZATION HISTOS =====
-/*void MinvTask::createHistos()
-{
-  mHistos.emplace_back(new TH1F("eta", "Pseudo-Rapidity", 200, -5., -2.)); 
-  mHistos.emplace_back(new TH1F("pT", "p_{T}", 128, 0., 15.));
-  mHistos.emplace_back(new TH1F("M", "Mass", 40, -5., 5.));
-  mHistos.emplace_back(new TH1F("Tracks", "Nb of tracks", 10, -1., 9.));
-  mHistos.emplace_back(new TH1F("minv1", "Invariant Mass 1", 500, 0., 5.));
-  mHistos.emplace_back(new TH1F("minv2", "InvariantMass 2", 500, 0., 5.));
-  mHistos.emplace_back(new TH1F("minv3", "Test Track size", 8, -1., 8.));
-
-  Double_t binRange_pT[] = {
-    0.,
-    1.,
-    2.,
-    3.,
-    4.,
-    5.,
-    6.,
-    8.,
-    12.,
-    16.,
-  };
-  mHistos_2.emplace_back(new TH2F("Minv pT", "M_{inv} depending of p_{T}", 9, binRange_pT, 200, 0., 5.));
-  mHistos_2.emplace_back(new TH2F("Minv rap", "M_{inv} depending of rapidity", 8, -4.5, -2., 200, 0., 5.));
-}*/
-
 // ===== FILLING HISTOS =====
 void MinvTask::fillHistos(gsl::span<const ExtendedTrack> tracks)
 {
-  /*TH1* rap = mHistos[0]; 
-  TH1* pt = mHistos[1];
-  TH1* minv = mHistos[2];
 
-  TH2* M_pT = mHistos_2[0];
-  TH2* M_y = mHistos_2[1];*/
-
-  for (const auto& t : tracks) { 
-    /*rap->Fill(t.P().Eta());
-    rap->GetXaxis()->SetTitle("eta");
-    rap->GetYaxis()->SetTitle("#");
-    pt->Fill(t.P().Pt());
-    pt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    pt->GetYaxis()->SetTitle("#");*/
+  // loop for 1D histograms
+  for (const auto& t : tracks) {
     auto lv = getLorentzVector(t);
     mHistogrammer.fillSingleParticleHistos(lv);
   }
 
-  for (auto trk1 = 0; trk1 < tracks.size(); trk1++) { 
+  // loop for 2D histograms
+  for (auto trk1 = 0; trk1 < tracks.size(); trk1++) {
     auto t1 = tracks[trk1];
-    for (auto trk2 = trk1 + 1; trk2 < tracks.size(); trk2++) { 
+    for (auto trk2 = trk1 + 1; trk2 < tracks.size(); trk2++) {
       auto t2 = tracks[trk2];
-
-      if (tracks[trk1].P().Eta() > -4. && tracks[trk1].P().Eta() < -2.5 && tracks[trk2].P().Eta() > -4. && tracks[trk2].P().Eta() < -2.5) { 
-        //Extended tracks
-        //const auto& test_Inv = ROOT::Math::VectorUtil::InvariantMass(tracks[trk1].P(), tracks[trk2].P());
-        //const auto& test_P = tracks[trk1].P() + tracks[trk2].P();
-        //Lorentz vectors
-        /*ROOT::Math::PxPyPzMVector Lorentz_Reco1(tracks[trk1].P().Px(), tracks[trk1].P().Py(), tracks[trk1].P().Pz(), tracks[trk1].P().M());
-        ROOT::Math::PxPyPzMVector Lorentz_Reco2(tracks[trk2].P().Px(), tracks[trk2].P().Py(), tracks[trk2].P().Pz(), tracks[trk2].P().M());
-        auto minv_Lorentz = ROOT::Math::VectorUtil::InvariantMass(Lorentz_Reco1, Lorentz_Reco2);
-        auto Lorentz_Reco_Fusion = Lorentz_Reco1 + Lorentz_Reco2;
-        if (Lorentz_Reco_Fusion.Rapidity() > -4 && Lorentz_Reco_Fusion.Rapidity() < -2.5) {
-          minv->Fill(minv_Lorentz, 1);
-          M_pT->Fill(Lorentz_Reco_Fusion.Pt(), minv_Lorentz, 1); 
-          M_y->Fill(Lorentz_Reco_Fusion.Rapidity(), minv_Lorentz, 1);*/
-
-          auto lv1 = getLorentzVector(t1);
-          auto lv2 = getLorentzVector(t2);
-
+      auto lv1 = getLorentzVector(t1);
+      auto lv2 = getLorentzVector(t2);
+      auto lv12 = lv1 + lv2;
+      if (tracks[trk1].P().Eta() > -4. && tracks[trk1].P().Eta() < -2.5 && tracks[trk2].P().Eta() > -4. && tracks[trk2].P().Eta() < -2.5) {
+        if (lv12.Rapidity() > -4 && lv12.Rapidity() < -2.5) {
           mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
-
         } else {
           continue;
         }
-      /*} else {
+      } else {
         continue;
       }
-      minv->GetXaxis()->SetTitle("invariant mass (GeV/c^{2})");
-      M_pT->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-      M_pT->GetYaxis()->SetTitle("invariant mass (GeV/c^{2})");
-      M_y->GetXaxis()->SetTitle("y");
-      M_y->GetYaxis()->SetTitle("invariant mass (GeV/c^{2})");*/
-
-      //Test
-      /*const auto& Mass1 = tracks[j].P().M();
-      const auto& Mass2 = tracks[h].P().M();
-      const auto& E1 = tracks[j].P().E();
-      const auto& E2 = tracks[h].P().E();
-      const auto& Ptot = tracks[j].P().Px() * tracks[h].P().Px() + tracks[j].P().Py() * tracks[h].P().Py() + tracks[j].P().Pz() * tracks[h].P().Pz();
-      const auto& test_Form = sqrt(Mass1 * Mass1 + Mass2 * Mass2 + 2 * (E1 * E2 - Ptot));  // calcul 2 : formule litterale
-      test3->Fill(test_Form);
-      test3->GetXaxis()->SetTitle("invariant mass (GeV/c^2)");*/
     }
   }
 }
 
-// ===== CREATION OF A EXTENDED TRACK FROM A TRACKMCH =====
+//create an Extended Track from a TrackMCH + clusters
 std::vector<ExtendedTrack> MinvTask::convert(gsl::span<const TrackMCH> mchTracks,
-                                             gsl::span<const Cluster> clusters) const 
+                                             gsl::span<const Cluster> clusters) const
 {
   std::vector<ExtendedTrack> tracks;
-  constexpr double vx{0.0}; 
+  constexpr double vx{0.0};
   constexpr double vy{0.0};
   constexpr double vz{0.0};
   for (const auto& mchTrack : mchTracks) {
@@ -184,8 +116,8 @@ std::vector<ExtendedTrack> MinvTask::convert(gsl::span<const TrackMCH> mchTracks
   return tracks;
 }
 
-// ===== WARNING lEVEL IN TERMINAL =====
-void MinvTask::dump(gsl::span<const ExtendedTrack> tracks) const 
+//warning level in terminal
+void MinvTask::dump(gsl::span<const ExtendedTrack> tracks) const
 {
   LOGP(warning, "# of tracks = {}", tracks.size());
   for (const auto& t : tracks) {
@@ -193,28 +125,28 @@ void MinvTask::dump(gsl::span<const ExtendedTrack> tracks) const
   }
 }
 
-// ===== EXTENDED TRACKS CALL =====
+//calling Extended Tracks
 std::vector<ExtendedTrack> MinvTask::getExtendedTracks(const ROFRecord& rof,
                                                        gsl::span<const TrackMCH> tfTracks,
                                                        gsl::span<const Cluster> tfClusters) const
 {
-  const auto mchTracks = tfTracks.subspan(rof.getFirstIdx(), rof.getNEntries()); 
+  const auto mchTracks = tfTracks.subspan(rof.getFirstIdx(), rof.getNEntries());
   return convert(mchTracks, tfClusters);
 }
 
-// ===== FINAL =====
+//loop on ROF
 void MinvTask::run(ProcessingContext& pc)
 {
   if (mCcdbRequest) {
     o2::base::GRPGeomHelper::instance().checkUpdates(pc);
   }
-  auto rofs = pc.inputs().get<gsl::span<ROFRecord>>("rofs"); 
+  auto rofs = pc.inputs().get<gsl::span<ROFRecord>>("rofs");
   auto tracks = pc.inputs().get<gsl::span<TrackMCH>>("tracks");
   auto clusters = pc.inputs().get<gsl::span<Cluster>>("clusters");
   int compt = 0;
   int comptbis = 0;
 
-  for (auto i = 0; i < rofs.size(); i++) {                     
+  for (auto i = 0; i < rofs.size(); i++) {
     auto etracks = getExtendedTracks(rofs[i], tracks, clusters);
     if (etracks.size() != 0) {
       compt += 1;
