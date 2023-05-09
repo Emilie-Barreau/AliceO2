@@ -18,6 +18,7 @@
 #include "Framework/ConcreteDataMatcher.h"
 #include "Framework/InitContext.h"
 #include "MCHEvaluation/ExtendedTrack.h"
+#include "Histogrammer.h"
 #include <TFile.h>
 #include <gsl/span>
 #include <memory>
@@ -57,8 +58,7 @@ class MinvTask
   std::unique_ptr<TFile> mOutputRootFile;
   std::vector<TH1*> mHistos;
   std::vector<TH2*> mHistos_2;
-  ROOT::Math::PxPyPzMVector Lorentz_Reco1(const double a, const double b, const double c, const double d);
-  ROOT::Math::PxPyPzMVector Lorentz_Reco2(const double a, const double b, const double c, const double d);
+  Histogrammer mHistogrammer;
 };
 } // namespace o2::mch::eval
 

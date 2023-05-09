@@ -17,6 +17,7 @@ o2_add_library(MCHEvaluation
                  src/MinvTask.cxx
                  src/ExtendedTrack.cxx
                  src/Histos.cxx
+                 src/Histogrammer.cxx
                PUBLIC_LINK_LIBRARIES
                   O2::DataFormatsMCH
                   O2::DetectorsRaw
@@ -42,7 +43,6 @@ o2_add_executable(minv-workflow
 o2_add_executable(kine-reader
                   SOURCES 
                     src/KineReader.cxx
-                    src/Histogrammer.cxx
                   COMPONENT_NAME mch
                   PUBLIC_LINK_LIBRARIES
                     O2::Steer
