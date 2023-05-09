@@ -24,6 +24,10 @@
 #include <memory>
 #include <vector>
 
+//From Extended Tracks, create histograms
+//
+//Changes have been made since we have the Histogrammer now
+
 class TH1;
 class TH2;
 
@@ -32,7 +36,7 @@ namespace o2::mch::eval
 class MinvTask
 {
  public:
-  MinvTask(std::shared_ptr<o2::base::GRPGeomRequest> req); 
+  MinvTask(std::shared_ptr<o2::base::GRPGeomRequest> req);   //constructor
 
   void finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj);
 
