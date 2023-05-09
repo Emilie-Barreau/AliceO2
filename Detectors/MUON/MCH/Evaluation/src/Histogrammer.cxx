@@ -1,40 +1,51 @@
 #include "Histogrammer.h"
-#include <iostream>
-#include "TH1F.h"
-
-Histogrammer::Histogrammer() {
-  mHistos.emplace_back(new TH1F("hphi","hphi",100,0,180));
-}
-void Histogrammer::fillSingleParticleHisto(const ROOT::Math::PxPyPzMVector& p){
-  std::cout << "TEST" << p << std::endl;
-  mHistos[0]->Fill(p.Phi());
-}
-
-/*
-#include "src/MinvTask.h"
-#include "src/KineReader.h"
+#include "TH1.h"
+#include "TH2.h"
 #include <iostream>
 #include <TFile.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TF1.h>
-#include <vector>
-#include <Math/Vector4D.h>
+#include <Math/GenVector/VectorUtil.h>
 
-using namespace std;
-using namespace o2::mch::eval;
-//using namespace o2::steer; ->reconnais pas ?
-
-class TH1;
-class TH2;
-class TF1;
-class KineReader;
-class MinvTask;
-
-int main()
+Histogrammer::Histogrammer()
 {
+  mHistos.emplace_back(new TH1F("pT", "pT", 100, 0., 16.));
+  mHistos.emplace_back(new TH1F("Eta", "Eta", 100, -5., -2.));
+  mHistos.emplace_back(new TH1F("Rapidity", "Rapidity", 100, -5., -2.));
+  mHistos.emplace_back(new TH1F("Minv", "Minv", 100., 2., 5.));
 
-  unique_ptr<TFile> myFile(TFile::Open("Reco_gener.root", "RECREATE"));
-
+  mHistos2.emplace_back(new TH2F("Minv pT", "M_{inv} depending of p_{T}", 200, 0., 16., 200, 0., 5.));
+  mHistos2.emplace_back(new TH2F("Minv rap", "M_{inv} depending of rapidity", 8, -4.5, -2., 200, 0., 5.));
 }
-*/
+
+void Histogrammer::save(const char* filename)
+{
+  std::__1::unique_ptr<TFile> myFile(TFile::Open(filename, "RECREATE"));
+
+  myFile->WriteObject(mHistos[0], "pT");
+  myFile->WriteObject(mHistos[1], "eta");
+  myFile->WriteObject(mHistos[2], "y");
+  myFile->WriteObject(mHistos[3], "minv");
+
+  myFile->WriteObject(mHistos2[0], "minv with pT");
+  myFile->WriteObject(mHistos2[1], "minv with y");
+}
+
+void Histogrammer::fillSingleParticleHistos(const ROOT::Math::PxPyPzMVector& lor)
+{
+  mHistos[0]->Fill(lor.Pt());
+  mHistos[1]->Fill(lor.Eta());
+  mHistos[2]->Fill(lor.Rapidity());
+}
+
+void Histogrammer::fillDoubleParticleHistos(const ROOT::Math::PxPyPzMVector& lor1, const ROOT::Math::PxPyPzMVector& lor2)
+{
+  auto lor12 = lor1 + lor2;
+  minv = GetInvariantMass(lor1, lor2);
+  mHistos[3]->Fill(minv);
+  mHistos2[0]->Fill(lor12.Pt(), minv);
+  mHistos2[1]->Fill(lor12.Rapidity(), minv);
+}
+
+double Histogrammer::GetInvariantMass(const ROOT::Math::PxPyPzMVector& lor1, const ROOT::Math::PxPyPzMVector& lor2)
+{
+  return ROOT::Math::VectorUtil::InvariantMass(lor1, lor2);
+}

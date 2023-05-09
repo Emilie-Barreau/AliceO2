@@ -14,25 +14,16 @@
 
 #include "Math/Vector4D.h"
 
-namespace o2::mch::eval
-{
-
 // ===== I AM TRYING =====
-class KineReader  //struct = all public
+class KineReader // struct = all public
 {
 
  public:
-  KineReader();                                             // constructor \°w°/
+  KineReader();
 
-  void createHistos();                               // static function because no object 
-  void fillHistos(ROOT::Math::PxPyPzMVector lor);           // function filling histos with Lorentz vectors
-
- public:
-  ROOT::Math::PxPyPzMVector Lorentz_Gen1(const double a, const double b, const double c, const double d);
-  ROOT::Math::PxPyPzMVector Lorentz_Gen2(const double a, const double b, const double c, const double d);
-  int Nevents;
+  void createHistos();
+  void fillHistos(ROOT::Math::PxPyPzMVector lor);
+  //ROOT::Math::PxPyPzMVector getLorentzVector(const o2::MCTrack& t);
 };
-
-} // namespace o2::mch::eval
 
 #endif
