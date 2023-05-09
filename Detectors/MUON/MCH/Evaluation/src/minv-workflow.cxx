@@ -9,6 +9,8 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+//==========FABRIQUE L'EXECUTABLE==========
+
 #include "CommonUtils/ConfigurableParam.h"
 #include "MinvTask.h"
 #include "DataFormatsMCH/Cluster.h"
@@ -28,14 +30,14 @@
 using namespace o2::framework;
 using namespace o2::mch;
 
-void customize(std::vector<ConfigParamSpec>& workflowOptions)
+void customize(std::vector<ConfigParamSpec>& workflowOptions)  //options sur le workflow
 {
   std::vector<ConfigParamSpec> options{
-    {"configKeyValues", VariantType::String, "", {"Semicolon separated key=value strings"}}};
+    {"configKeyValues", VariantType::String, "", {"Semicolon separated key=value strings"}}};  //separation des colonnes ?
   std::swap(workflowOptions, options);
 }
 
-#include "Framework/runDataProcessing.h"
+#include "Framework/runDataProcessing.h"  //Main
 
 WorkflowSpec defineDataProcessing(ConfigContext const& configcontext)
 {
@@ -43,7 +45,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const& configcontext)
 
   o2::conf::ConfigurableParam::updateFromString(configcontext.options().get<std::string>("configKeyValues"));
 
-  Inputs inputs{};
+  Inputs inputs{};  //entrees utiles pour le code : les rof, les clusters et les traces
   inputs.emplace_back("rofs", "MCH", "TRACKROFS", 0, Lifetime::Timeframe);
   inputs.emplace_back("tracks", "MCH", "TRACKS", 0, Lifetime::Timeframe);
   inputs.emplace_back("clusters", "MCH", "TRACKCLUSTERS", 0, Lifetime::Timeframe);
@@ -55,7 +57,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const& configcontext)
                                                                 false,                             // askMatLUT
                                                                 o2::base::GRPGeomRequest::Aligned, // geometry
                                                                 inputs);
-  specs.emplace_back(DataProcessorSpec{
+  specs.emplace_back(DataProcessorSpec{  //configure le device : nom du fichier, outputs, inputs
     "mch-minv",
     inputs,
     Outputs{},

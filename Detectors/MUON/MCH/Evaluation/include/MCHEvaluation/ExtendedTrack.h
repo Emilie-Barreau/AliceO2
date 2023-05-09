@@ -40,7 +40,7 @@ class ExtendedTrack
    * The given TrackMCH will be extrapolated to the given vertex {x,y,z}.
    * Throw an exception if the track fitting fails
    */
-  ExtendedTrack(const TrackMCH& track,
+  ExtendedTrack(const TrackMCH& track,  //fonction qui definit une extended track
                 gsl::span<const Cluster>& clusters,
                 double x, double y, double z);
 
@@ -48,12 +48,12 @@ class ExtendedTrack
 
   bool isMatching(const ExtendedTrack& track) const;
 
-  const std::vector<Cluster>& getClusters() const { return mClusters; }
+  const std::vector<Cluster>& getClusters() const { return mClusters; }  //vecteur des clusters d'une trace
 
   std::string asString() const;
 
-  bool hasMatchFound() const { return mHasMatchFound; }
-  bool hasMatchIdentical() const { return mHasMatchIdentical; }
+  bool hasMatchFound() const { return mHasMatchFound; } 
+  bool hasMatchIdentical() const { return mHasMatchIdentical; }  
 
   void setMatchFound(bool val = true) { mHasMatchFound = val; }
   void setMatchIdentical(bool val = true) { mHasMatchIdentical = val; }
@@ -65,16 +65,16 @@ class ExtendedTrack
   double getRabs() const { return mRabs; }
   double getCharge() const { return param().getCharge(); }
 
-  const ROOT::Math::PxPyPzMVector& P() const { return mMomentum4D; }
+  const ROOT::Math::PxPyPzMVector& P() const { return mMomentum4D; }  //Lorentz vecteur des particules
 
-  double getNormalizedChi2() const;
-
- private:
-  void extrapToVertex(double x, double y, double z);
+  double getNormalizedChi2() const;  //fonction de normalisation du Chi2
 
  private:
-  Track mTrack{};
-  std::vector<Cluster> mClusters{};
+  void extrapToVertex(double x, double y, double z);  //fonction d'extrapolation au premier vertex de la trace MCH
+
+ private:
+  Track mTrack{}; 
+  std::vector<Cluster> mClusters{}; 
   ROOT::Math::PxPyPzMVector mMomentum4D{};
   bool mHasMatchFound;
   bool mHasMatchIdentical;
