@@ -29,8 +29,18 @@ o2_add_executable(minv-workflow
                     O2::MCHEvaluation
                   )
 
+o2_add_executable(kine-reader
+                  SOURCES 
+                    src/KineReader.cxx
+                    src/Histogrammer.cxx
+                  COMPONENT_NAME mch
+                  PUBLIC_LINK_LIBRARIES
+                    O2::Steer
+                    O2::MCHEvaluation
+                  )
+
 o2_target_root_dictionary(MCHEvaluation
                           HEADERS
-                            include/MCHEvaluation/ExtendedTrack.h
+                          include/MCHEvaluation/ExtendedTrack.h
                           LINKDEF src/MCHEvaluationLinkDef.h)
 

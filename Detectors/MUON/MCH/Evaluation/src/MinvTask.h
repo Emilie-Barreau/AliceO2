@@ -24,37 +24,41 @@
 #include <vector>
 
 class TH1;
+class TH2;
 
 namespace o2::mch::eval
 {
 class MinvTask
 {
  public:
-  MinvTask(std::shared_ptr<o2::base::GRPGeomRequest> req);
+  MinvTask(std::shared_ptr<o2::base::GRPGeomRequest> req); 
 
   void finaliseCCDB(o2::framework::ConcreteDataMatcher& matcher, void* obj);
 
   void init(o2::framework::InitContext& ic);
 
   std::vector<ExtendedTrack> convert(gsl::span<const TrackMCH> mchTracks,
-                                   gsl::span<const Cluster> clusters) const;
+                                     gsl::span<const Cluster> clusters) const;
 
   void dump(gsl::span<const ExtendedTrack> tracks) const;
 
   std::vector<ExtendedTrack> getExtendedTracks(const ROFRecord& rof,
-                                             gsl::span<const TrackMCH> tfTracks,
-                                             gsl::span<const Cluster> tfClusters) const;
+                                               gsl::span<const TrackMCH> tfTracks,
+                                               gsl::span<const Cluster> tfClusters) const;
 
   void run(o2::framework::ProcessingContext& pc);
 
  private:
-   void createHistos();
-   void fillHistos(gsl::span<const ExtendedTrack> tracks);
+  void createHistos();
+  void fillHistos(gsl::span<const ExtendedTrack> tracks);
 
  private:
   std::shared_ptr<o2::base::GRPGeomRequest> mCcdbRequest;
   std::unique_ptr<TFile> mOutputRootFile;
   std::vector<TH1*> mHistos;
+  std::vector<TH2*> mHistos_2;
+  ROOT::Math::PxPyPzMVector Lorentz_Reco1(const double a, const double b, const double c, const double d);
+  ROOT::Math::PxPyPzMVector Lorentz_Reco2(const double a, const double b, const double c, const double d);
 };
 } // namespace o2::mch::eval
 

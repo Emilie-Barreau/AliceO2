@@ -9,6 +9,8 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+//==========EXTRAPOLE LA TRACE AU VERTEX PRIMAIRE==========
+
 #include "DataFormatsMCH/Cluster.h"
 #include "DataFormatsMCH/TrackMCH.h"
 #include "MCHEvaluation/ExtendedTrack.h"
@@ -17,11 +19,11 @@
 #include "TGeoGlobalMagField.h"
 #include <fmt/format.h>
 
-constexpr double muMass = 0.10565800;
+constexpr double muMass = 0.10565800;  //initialise la masse du muon
 
 namespace o2::mch::eval
 {
-TrackFitter& trackFitter()
+TrackFitter& trackFitter()  //verifie que le champ magnetique est actif ?
 {
   static TrackFitter trackFitter;
   static bool isInitialized{false};
@@ -38,41 +40,40 @@ TrackFitter& trackFitter()
 
 ExtendedTrack::ExtendedTrack(const TrackMCH& track,
                              gsl::span<const Cluster>& clusters,
-                             double x, double y, double z)
+                             double x, double y, double z)  //extended depend des clusters choisis, de la trace et du vertex
 {
-  auto s = clusters.subspan(track.getFirstClusterIdx(),
+  auto s = clusters.subspan(track.getFirstClusterIdx(),  //recupere l'ID du premier cluster de la trace et le nombre de clusters
                             track.getNClusters());
 
-  mClusters.assign(begin(s), end(s));
+  mClusters.assign(begin(s), end(s));  //sequence des clusters pour chaque trace
   for (const auto& cluster : mClusters) {
     mTrack.createParamAtCluster(cluster);
   }
 
-  trackFitter().fit(mTrack);
-  extrapToVertex(x, y, z);
+  trackFitter().fit(mTrack);  //fit la trace
+  extrapToVertex(x, y, z);  //extrapolation au vertex
 }
 
 void ExtendedTrack::extrapToVertex(double x, double y, double z)
-{
-  /// compute the track parameters at vertex, at DCA and at the end of the absorber
+{  //compute the track parameters at vertex, at DCA and at the end of the absorber
 
-  // extrapolate to vertex
-  TrackParam trackParamAtVertex(mTrack.first()); // mTrack.first() = parameters at first cluster
+  //extrapolate to vertex
+  TrackParam trackParamAtVertex(mTrack.first());  //mTrack.first() = parameters at first cluster
   TrackExtrap::extrapToVertex(trackParamAtVertex, x, y, z, 0., 0.);
-  mMomentum4D.SetPx(trackParamAtVertex.px());
+  mMomentum4D.SetPx(trackParamAtVertex.px());  //initialise les paramètres du 4-vecteur au vertex ?
   mMomentum4D.SetPy(trackParamAtVertex.py());
   mMomentum4D.SetPz(trackParamAtVertex.pz());
   mMomentum4D.SetM(muMass);
   mSign = trackParamAtVertex.getCharge();
 
-  // extrapolate to DCA
+  //extrapolate to DCA (Distance of Closest Approach)
   TrackParam trackParamAtDCA(mTrack.first());
   TrackExtrap::extrapToVertexWithoutBranson(trackParamAtDCA, z);
-  double dcaX = trackParamAtDCA.getNonBendingCoor() - x;
-  double dcaY = trackParamAtDCA.getBendingCoor() - y;
+  double dcaX = trackParamAtDCA.getNonBendingCoor() - x;  //sur plan non courbe
+  double dcaY = trackParamAtDCA.getBendingCoor() - y;  //sur plan courbe
   mDCA = std::sqrt(dcaX * dcaX + dcaY * dcaY);
 
-  // extrapolate to the end of the absorber
+  //extrapolate to the end of the absorber
   TrackParam trackParam(mTrack.first());
   TrackExtrap::extrapToZ(trackParam, -505.);
   double xAbs = trackParam.getNonBendingCoor();
@@ -80,7 +81,7 @@ void ExtendedTrack::extrapToVertex(double x, double y, double z)
   mRabs = std::sqrt(xAbs * xAbs + yAbs * yAbs);
 }
 
-bool ExtendedTrack::operator==(const ExtendedTrack& track) const
+bool ExtendedTrack::operator==(const ExtendedTrack& track) const  //PAS COMPRIS
 {
   return areEqual(*this, track, sChi2Max);
 }
@@ -100,44 +101,44 @@ bool ExtendedTrack::isMatching(const ExtendedTrack& track) const
   return areMatching(*this, track, sChi2Max);
 }
 
-bool areEqual(const ExtendedTrack& t1, const ExtendedTrack& t2, double chi2Max)
+bool areEqual(const ExtendedTrack& t1, const ExtendedTrack& t2, double chi2Max)  //compare deux traces avec un Chi2
 {
-  const auto& clusters1 = t1.getClusters();
-  const auto& clusters2 = t2.getClusters();
-  if (clusters1.size() != clusters2.size()) {
+  const auto& clusters1 = t1.getClusters();  //recupere les clusters du 1
+  const auto& clusters2 = t2.getClusters();  //recupere les clusters du 2
+  if (clusters1.size() != clusters2.size()) {  //si la taille est differente ?
     return false;
   }
-  for (size_t iCl = 0; iCl != clusters1.size(); ++iCl) {
+  for (size_t iCl = 0; iCl != clusters1.size(); ++iCl) {  //sur l'ensemble des clusters
     const auto& cl1 = clusters1[iCl];
     const auto& cl2 = clusters2[iCl];
-    if (cl1.getDEId() != cl2.getDEId()) {
+    if (cl1.getDEId() != cl2.getDEId()) {  //si l'ID des clusters est different ?
       return false;
     }
-    double dx = cl1.getX() - cl2.getX();
+    double dx = cl1.getX() - cl2.getX();  //delta x et y des clusters
     double dy = cl1.getY() - cl2.getY();
-    double chi2 = dx * dx / (cl1.getEx2() + cl2.getEx2()) + dy * dy / (cl1.getEy2() + cl2.getEy2());
-    if (chi2 > chi2Max) {
+    double chi2 = dx * dx / (cl1.getEx2() + cl2.getEx2()) + dy * dy / (cl1.getEy2() + cl2.getEy2());  //calcul du Chi2
+    if (chi2 > chi2Max) {  //ne doit pas dépasser le Chi2Max
       return false;
     }
   }
   return true;
 }
 
-bool areMatching(const ExtendedTrack& t1, const ExtendedTrack& t2, double chi2Max)
+bool areMatching(const ExtendedTrack& t1, const ExtendedTrack& t2, double chi2Max)  //verification si 2 traces matchent ?
 {
   size_t nMatchClusters(0);
   bool matchCluster[10] = {false, false, false, false, false, false, false, false, false, false};
 
-  const auto& clusters1 = t1.getClusters();
+  const auto& clusters1 = t1.getClusters();  //recuperation des clusters des traces 1 et 2
   const auto& clusters2 = t2.getClusters();
 
-  for (const auto& cl1 : clusters1) {
-    for (const auto& cl2 : clusters2) {
-      if (cl1.getDEId() == cl2.getDEId()) {
-        double dx = cl1.getX() - cl2.getX();
+  for (const auto& cl1 : clusters1) {  //sur les clusters 1
+    for (const auto& cl2 : clusters2) {  //sur les clusters 2
+      if (cl1.getDEId() == cl2.getDEId()) {  //si l'ID des clusters est identique 
+        double dx = cl1.getX() - cl2.getX();  //delta x et y des clusters
         double dy = cl1.getY() - cl2.getY();
-        double chi2 = dx * dx / (cl1.getEx2() + cl2.getEx2()) + dy * dy / (cl1.getEy2() + cl2.getEy2());
-        if (chi2 <= chi2Max) {
+        double chi2 = dx * dx / (cl1.getEx2() + cl2.getEx2()) + dy * dy / (cl1.getEy2() + cl2.getEy2());  //calcul du Chi2
+        if (chi2 <= chi2Max) {  //si inferieur au Chi2Max
           matchCluster[cl1.getChamberId()] = true;
           ++nMatchClusters;
           break;
@@ -157,7 +158,7 @@ std::ostream& operator<<(std::ostream& out, const ExtendedTrack& track)
   return out;
 }
 
-double ExtendedTrack::getNormalizedChi2() const
+double ExtendedTrack::getNormalizedChi2() const  //normalisation du Chi2
 {
   double chi2 = mTrack.first().getTrackChi2();
   double ndf = 2.0 * mClusters.size() - 6;
