@@ -37,22 +37,17 @@ int main()
   TH2F* minv_rap = new TH2F("mrap", "M_{inv} depending of y", 200, -5., -1., 500, 0., 5.);
   TH2F* minv_pt = new TH2F("mpt", "M_{inv} depending of p_{T}", 500, 0., 16., 500, 0., 5.);*/
 
-  // ===== CALLING MCKINEMATICSREADER OBJECT =====
-  MCKinematicsReader r("sgn", MCKinematicsReader::Mode::kMCKine); // r is the object
+  // ===== CALLING MCKINEMATICSREADER AND HISTOGRAMMER OBJECTS =====
+  MCKinematicsReader r("sgn", MCKinematicsReader::Mode::kMCKine); 
+  Histogrammer histogrammer;
 
   // ===== TEST =====
   ofstream myfile, myfile2;
   myfile.open("Primary.txt");
   myfile2.open("Second.txt");
 
-  int compteur = 0;
-  int compteur2 = 0;
-
-  Histogrammer histogrammer;
-
   // ===== LOOP FOR MUONS AND J/PSI =====
   for (int evt = 0; evt < r.getNEvents(0); evt++) {
-    compteur = 0;
     for (int trk = 0; trk < r.getTracks(evt).size(); trk++) {
       auto t = r.getTrack(evt, trk);
       auto lv = getLorentzVector(*t);
@@ -60,8 +55,6 @@ int main()
         histogrammer.fillSingleParticleHistos(lv);
         // pt->Fill(r.getTrack(evt, trk)->GetPt());
         // eta->Fill(r.getTrack(evt, trk)->GetEta());
-        compteur += 1;
-        compteur2 += 1;
       } else if (t->GetPdgCode() == 443) {
         // rap->Fill(r.getTrack(evt, trk)->GetRapidity());
       } else {
@@ -115,8 +108,6 @@ int main()
       }
     }
   }
-
-  std::cout << "Nb muons total : " << compteur2 << std::endl;
 
   // ===== WRITING HISTOS =====
   /*pt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
