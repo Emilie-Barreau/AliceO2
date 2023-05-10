@@ -15,31 +15,31 @@ using namespace std;
 using namespace o2::steer;
 using namespace o2::mch::eval;
 
-KineReader::KineReader() {}   
+KineReader::KineReader() {}
 
-//function oustide classes, gives a Lorentzvector from a MCtrack
-ROOT::Math::PxPyPzMVector getLorentzVector(const o2::MCTrack& t)   
+// function oustide classes, gives a Lorentzvector from a MCtrack
+ROOT::Math::PxPyPzMVector getLorentzVector(const o2::MCTrack& t)
 {
   return ROOT::Math::PxPyPzMVector(t.Px(), t.Py(), t.Pz(), t.GetMass());
 }
 
 int main()
 {
-  //calling objects from other classes
-  MCKinematicsReader r("sgn", MCKinematicsReader::Mode::kMCKine); 
+  // calling objects from other classes
+  MCKinematicsReader r("sgn", MCKinematicsReader::Mode::kMCKine);
   Histogrammer histogrammer;
 
-  //text files to know how many muons are primary or not (primary -> J/Psi decay)
+  // text files to know how many muons are primary or not (primary -> J/Psi decay)
   ofstream myfile, myfile2;
   myfile.open("Primary.txt");
   myfile2.open("Second.txt");
 
-  //loop for 1D histograms -> all tracks from all event
+  // loop for 1D histograms -> all tracks from all event
   for (int evt = 0; evt < r.getNEvents(0); evt++) {
     for (int trk = 0; trk < r.getTracks(evt).size(); trk++) {
       auto t = r.getTrack(evt, trk);
       auto lv = getLorentzVector(*t);
-      if (t->GetPdgCode() == 13 || t->GetPdgCode() == -13) {   
+      if (t->GetPdgCode() == 13 || t->GetPdgCode() == -13) {
         histogrammer.fillSingleParticleHistos(lv);
       } else if (t->GetPdgCode() == 443) {
         // rap->Fill(r.getTrack(evt, trk)->GetRapidity());
@@ -56,7 +56,7 @@ int main()
   myfile.close();
   myfile2.close();
 
-  //loop for 2D histograms -> dimuons coming from J/Psi
+  // loop for 2D histograms -> dimuons coming from J/Psi
   for (int Evt = 0; Evt < r.getNEvents(0); Evt++) {
     for (int mu1 = 0; mu1 < r.getTracks(Evt).size(); mu1++) {
       auto t1 = r.getTrack(Evt, mu1);
@@ -77,7 +77,7 @@ int main()
     }
   }
 
-  //saving the histograms
+  // saving the histograms
   histogrammer.save("Histos.root");
 
   return 0;

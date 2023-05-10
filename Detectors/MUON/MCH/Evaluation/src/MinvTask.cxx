@@ -102,7 +102,7 @@ void MinvTask::fillHistos(gsl::span<const ExtendedTrack> tracks)
   }
 }
 
-//create an Extended Track from a TrackMCH + clusters
+// create an Extended Track from a TrackMCH + clusters
 std::vector<ExtendedTrack> MinvTask::convert(gsl::span<const TrackMCH> mchTracks,
                                              gsl::span<const Cluster> clusters) const
 {
@@ -116,7 +116,7 @@ std::vector<ExtendedTrack> MinvTask::convert(gsl::span<const TrackMCH> mchTracks
   return tracks;
 }
 
-//warning level in terminal
+// warning level in terminal
 void MinvTask::dump(gsl::span<const ExtendedTrack> tracks) const
 {
   LOGP(warning, "# of tracks = {}", tracks.size());
@@ -125,7 +125,7 @@ void MinvTask::dump(gsl::span<const ExtendedTrack> tracks) const
   }
 }
 
-//calling Extended Tracks
+// calling Extended Tracks
 std::vector<ExtendedTrack> MinvTask::getExtendedTracks(const ROFRecord& rof,
                                                        gsl::span<const TrackMCH> tfTracks,
                                                        gsl::span<const Cluster> tfClusters) const
@@ -134,7 +134,7 @@ std::vector<ExtendedTrack> MinvTask::getExtendedTracks(const ROFRecord& rof,
   return convert(mchTracks, tfClusters);
 }
 
-//loop on ROF
+// loop on ROF
 void MinvTask::run(ProcessingContext& pc)
 {
   if (mCcdbRequest) {
