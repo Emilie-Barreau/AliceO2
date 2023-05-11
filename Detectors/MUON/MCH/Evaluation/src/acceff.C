@@ -1,6 +1,7 @@
 #include "TFile.h"
 #include <TH1.h>
 #include <TH2.h>
+#include <TCanvas.h>
 #include <iostream>
 
 //Macro with previous histograms
@@ -17,6 +18,9 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
 
   TFile* f_gen = TFile::Open(fgen);
   TFile* f_reco = TFile::Open(freco);
+
+  TCanvas *c = new TCanvas();
+  c->Divide(2,3);
 
   // For pT
   TH1* hpt_gen = static_cast<TH1*>(f_gen->Get("pT"));
@@ -68,9 +72,28 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   std::cout << "acceff y : " << acceff_minvy * 100 << " \%" << std::endl;
   hmy_reco->Divide(hmy_gen);
 
+  c->cd(1);
+  hpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
+  hpt_reco->SetYTitle("A.e");
   hpt_reco->Draw();
+
+  c->cd(2);
+  hy_reco->SetXTitle("y");
+  hy_reco->SetYTitle("A.e");
   hy_reco->Draw();
+
+  c->cd(3);
+  hm_reco->SetXTitle("invariant mass (GeV/c)");
+  hm_reco->SetYTitle("A.e");
   hm_reco->Draw();
-  //hmpt_reco->Draw("COLZ");
-  //hmy_reco->Draw("COLZ");
+
+  c->cd(4);
+  hmpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
+  hmpt_reco->SetYTitle("invariant mass (GeV/c)");
+  hmpt_reco->Draw("COLZ");
+
+  c->cd(5);
+  hmy_reco->SetXTitle("y");
+  hmy_reco->SetYTitle("invariant mass (GeV/c)");
+  hmy_reco->Draw("COLZ");
 }
