@@ -9,7 +9,7 @@
 Histogrammer::Histogrammer()
 {
   // initializing bins and limits for histograms
-  mHistos.emplace_back(new TH1F("pT", "pT", 17, 0., 16.));
+  mHistos.emplace_back(new TH1F("pT", "pT", 100, 0., 10.));
   mHistos.emplace_back(new TH1F("Rapidity", "Rapidity", 100, -5., -2.));
   mHistos.emplace_back(new TH1F("Eta", "Eta", 100, -5., -2.));
   mHistos.emplace_back(new TH1F("Minv", "Minv", 100., 2., 5.));
@@ -42,15 +42,17 @@ void Histogrammer::save(const char* filename)
 void Histogrammer::fillSingleParticleHistos(const ROOT::Math::PxPyPzMVector& lor)
 {
   // fill 1D
-  mHistos[0]->Fill(lor.Pt());
-  mHistos[1]->Fill(lor.Eta());
-  mHistos[2]->Fill(lor.Rapidity());
+  //mHistos[0]->Fill(lor.Pt());
+  mHistos[2]->Fill(lor.Eta());
+  //mHistos[2]->Fill(lor.Rapidity());
 }
 
 void Histogrammer::fillDoubleParticleHistos(const ROOT::Math::PxPyPzMVector& lor1, const ROOT::Math::PxPyPzMVector& lor2)
 {
   // fill 2D
   auto lor12 = lor1 + lor2;
+  mHistos[0]->Fill(lor12.Pt());
+  mHistos[1]->Fill(lor12.Rapidity());
   mHistos[3]->Fill(lor12.M());
   mHistos2[0]->Fill(lor12.Pt(), lor12.M());
   mHistos2[1]->Fill(lor12.Rapidity(), lor12.M());

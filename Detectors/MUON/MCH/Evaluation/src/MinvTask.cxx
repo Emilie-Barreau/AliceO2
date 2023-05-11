@@ -91,7 +91,11 @@ void MinvTask::fillHistos(gsl::span<const ExtendedTrack> tracks)
       auto lv12 = lv1 + lv2;
       if (tracks[trk1].P().Eta() > -4. && tracks[trk1].P().Eta() < -2.5 && tracks[trk2].P().Eta() > -4. && tracks[trk2].P().Eta() < -2.5) {
         if (lv12.Rapidity() > -4 && lv12.Rapidity() < -2.5) {
-          mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
+         if (lv12.M() > 3.05 && lv12.M() < 3.15) {
+            mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
+          } else {
+            continue;
+          }
         } else {
           continue;
         }
