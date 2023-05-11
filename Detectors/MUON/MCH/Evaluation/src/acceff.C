@@ -18,6 +18,24 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   TFile* f_gen = TFile::Open(fgen);
   TFile* f_reco = TFile::Open(freco);
 
+  // For pT
+  TH1* hpt_gen = static_cast<TH1*>(f_gen->Get("pT"));
+  TH1* hpt_reco = static_cast<TH1*>(f_reco->Get("pT"));
+  double acceff_pt = hpt_reco->GetEntries() / hpt_gen->GetEntries();
+  std::cout << "=====================================================" << std::endl;
+  std::cout << "Entries gen et reco : " << hpt_gen->GetEntries() << " et " << hpt_reco->GetEntries() << std::endl;
+  std::cout << "acceff pT : " << acceff_pt * 100 << " \%" << std::endl;
+  hpt_reco->Divide(hpt_gen);
+
+  // For y
+  TH1* hy_gen = static_cast<TH1*>(f_gen->Get("y"));
+  TH1* hy_reco = static_cast<TH1*>(f_reco->Get("y"));
+  double acceff_y = hy_reco->GetEntries() / hy_gen->GetEntries();
+  std::cout << "=====================================================" << std::endl;
+  std::cout << "Entries gen et reco : " << hy_gen->GetEntries() << " et " << hy_reco->GetEntries() << std::endl;
+  std::cout << "acceff y : " << acceff_y * 100 << " \%" << std::endl;
+  hy_reco->Divide(hy_gen);
+
   // For Invariant mass
   TH1* hm_gen = static_cast<TH1*>(f_gen->Get("minv"));
   TH1* hm_reco = static_cast<TH1*>(f_reco->Get("minv"));
@@ -25,8 +43,12 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   std::cout << "=====================================================" << std::endl;
   std::cout << "Entries gen et reco : " << hm_gen->GetEntries() << " et " << hm_reco->GetEntries() << std::endl;
   std::cout << "acceff minv : " << acceff_minv * 100 << " \%" << std::endl;
+  /*double bin1 = hm_reco->FindBin(3.);
+  double bin2 = hm_reco->FindBin(3.25);
+  double integ = hm_reco->Integral(bin1, bin2);
+  std::cout << "Integrale : " << integ << std::endl;*/
   hm_reco->Divide(hm_gen);
-  //std::cout << hm_reco->Integral() << std::endl;
+  //hm_reco->Scale(1./hm_reco->Integral());
 
   // For Invariant mass depending of pT
   TH2* hmpt_gen = static_cast<TH2*>(f_gen->Get("minv with pT"));
@@ -46,7 +68,9 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   std::cout << "acceff y : " << acceff_minvy * 100 << " \%" << std::endl;
   hmy_reco->Divide(hmy_gen);
 
+  hpt_reco->Draw();
+  hy_reco->Draw();
   hm_reco->Draw();
-  hmpt_reco->Draw("COLZ");
-  hmy_reco->Draw("COLZ");
+  //hmpt_reco->Draw("COLZ");
+  //hmy_reco->Draw("COLZ");
 }
