@@ -25,6 +25,8 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   // For pT
   TH1* hpt_gen = static_cast<TH1*>(f_gen->Get("pT"));
   TH1* hpt_reco = static_cast<TH1*>(f_reco->Get("pT"));
+  hpt_gen->Sumw2();
+  hpt_reco->Sumw2();
   double acceff_pt = hpt_reco->GetEntries() / hpt_gen->GetEntries();
   std::cout << "=====================================================" << std::endl;
   std::cout << "Entries gen et reco : " << hpt_gen->GetEntries() << " et " << hpt_reco->GetEntries() << std::endl;
@@ -34,6 +36,8 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   // For y
   TH1* hy_gen = static_cast<TH1*>(f_gen->Get("y"));
   TH1* hy_reco = static_cast<TH1*>(f_reco->Get("y"));
+  hy_gen->Sumw2();
+  hy_reco->Sumw2();
   double acceff_y = hy_reco->GetEntries() / hy_gen->GetEntries();
   std::cout << "=====================================================" << std::endl;
   std::cout << "Entries gen et reco : " << hy_gen->GetEntries() << " et " << hy_reco->GetEntries() << std::endl;
@@ -43,6 +47,8 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   // For Invariant mass
   TH1* hm_gen = static_cast<TH1*>(f_gen->Get("minv"));
   TH1* hm_reco = static_cast<TH1*>(f_reco->Get("minv"));
+  hm_gen->Sumw2();
+  hm_reco->Sumw2();
   double acceff_minv = hm_reco->GetEntries() / hm_gen->GetEntries();
   std::cout << "=====================================================" << std::endl;
   std::cout << "Entries gen et reco : " << hm_gen->GetEntries() << " et " << hm_reco->GetEntries() << std::endl;
@@ -75,24 +81,24 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   c->cd(1);
   hpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
   hpt_reco->SetYTitle("A.e");
-  hpt_reco->Draw();
+  hpt_reco->Draw("HIST E");
 
   c->cd(2);
   hy_reco->SetXTitle("y");
   hy_reco->SetYTitle("A.e");
-  hy_reco->Draw();
+  hy_reco->Draw("HIST E");
 
   c->cd(3);
   hm_reco->SetXTitle("invariant mass (GeV/c)");
   hm_reco->SetYTitle("A.e");
-  hm_reco->Draw();
+  hm_reco->Draw("HIST E");
 
-  c->cd(4);
+  c->cd(5);
   hmpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
   hmpt_reco->SetYTitle("invariant mass (GeV/c)");
   hmpt_reco->Draw("COLZ");
 
-  c->cd(5);
+  c->cd(6);
   hmy_reco->SetXTitle("y");
   hmy_reco->SetYTitle("invariant mass (GeV/c)");
   hmy_reco->Draw("COLZ");
