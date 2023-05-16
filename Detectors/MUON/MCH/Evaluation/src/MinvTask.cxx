@@ -91,11 +91,11 @@ void MinvTask::fillHistos(gsl::span<const ExtendedTrack> tracks)
       auto lv12 = lv1 + lv2;
       if (tracks[trk1].P().Eta() > -4. && tracks[trk1].P().Eta() < -2.5 && tracks[trk2].P().Eta() > -4. && tracks[trk2].P().Eta() < -2.5) {
         if (lv12.Rapidity() > -4 && lv12.Rapidity() < -2.5) {
-         if (lv12.M() > 3.05 && lv12.M() < 3.15) {
+          //if (lv12.M() > 3.0 && lv12.M() < 3.2) { // 3.06 3.1
             mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
-          } else {
-            continue;
-          }
+          //} else {
+            //continue;
+          //}
         } else {
           continue;
         }
@@ -146,7 +146,7 @@ void MinvTask::run(ProcessingContext& pc)
   }
   auto rofs = pc.inputs().get<gsl::span<ROFRecord>>("rofs");
   auto tracks = pc.inputs().get<gsl::span<TrackMCH>>("tracks");
-  auto clusters = pc.inputs().get<gsl::span<Cluster>>("clusters");
+  auto clusters = pc.inputs().get<gsl::span<Cluster>>("clusters"); 
   int compt = 0;
   int comptbis = 0;
 

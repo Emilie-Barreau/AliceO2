@@ -9,13 +9,13 @@
 Histogrammer::Histogrammer()
 {
   // initializing bins and limits for histograms
-  mHistos.emplace_back(new TH1F("pT", "pT", 100, 0., 10.));
-  mHistos.emplace_back(new TH1F("Rapidity", "Rapidity", 100, -5., -2.));
-  mHistos.emplace_back(new TH1F("Eta", "Eta", 100, -5., -2.));
-  mHistos.emplace_back(new TH1F("Minv", "Minv", 100., 2., 5.));
+  mHistos.emplace_back(new TH1F("pT", "pT", 100, 0., 9.));
+  mHistos.emplace_back(new TH1F("Rapidity", "Rapidity", 100, -4.5, -2.));
+  mHistos.emplace_back(new TH1F("Eta", "Eta", 100, -4.5, -2.));
+  mHistos.emplace_back(new TH1F("Minv", "Minv", 100., 2., 3.5));
 
-  mHistos2.emplace_back(new TH2F("Minv pT", "M_{inv} depending of p_{T}", 100, 0., 16., 100, 0., 5.));
-  mHistos2.emplace_back(new TH2F("Minv rap", "M_{inv} depending of rapidity", 100, -4.5, -2., 100, 0., 5.));
+  mHistos2.emplace_back(new TH2F("Minv pT", "M_{inv} depending of p_{T}", 100, 0., 16., 100, 0., 3.5));
+  mHistos2.emplace_back(new TH2F("Minv rap", "M_{inv} depending of rapidity", 100, -4.5, -2., 100, 0., 3.5));
 }
 
 void Histogrammer::save(const char* filename)
