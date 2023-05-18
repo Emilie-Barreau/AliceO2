@@ -19,11 +19,11 @@
 #include "TGeoGlobalMagField.h"
 #include <fmt/format.h>
 
-constexpr double muMass = 0.10565800;  //initialise la masse du muon
+constexpr double muMass = 0.10565800; 
 
 namespace o2::mch::eval
 {
-TrackFitter& trackFitter()  //verifie que le champ magnetique est actif ?
+TrackFitter& trackFitter() 
 {
   static TrackFitter trackFitter;
   static bool isInitialized{false};
@@ -40,18 +40,18 @@ TrackFitter& trackFitter()  //verifie que le champ magnetique est actif ?
 
 ExtendedTrack::ExtendedTrack(const TrackMCH& track,
                              gsl::span<const Cluster>& clusters,
-                             double x, double y, double z)  //extended depend des clusters choisis, de la trace et du vertex
+                             double x, double y, double z) 
 {
-  auto s = clusters.subspan(track.getFirstClusterIdx(),  //recupere l'ID du premier cluster de la trace et le nombre de clusters
+  auto s = clusters.subspan(track.getFirstClusterIdx(), 
                             track.getNClusters());
 
-  mClusters.assign(begin(s), end(s));  //sequence des clusters pour chaque trace
+  mClusters.assign(begin(s), end(s));  
   for (const auto& cluster : mClusters) {
     mTrack.createParamAtCluster(cluster);
   }
 
-  trackFitter().fit(mTrack);  //fit la trace
-  extrapToVertex(x, y, z);  //extrapolation au vertex
+  trackFitter().fit(mTrack);  
+  extrapToVertex(x, y, z);  
 }
 
 void ExtendedTrack::extrapToVertex(double x, double y, double z)
@@ -60,7 +60,7 @@ void ExtendedTrack::extrapToVertex(double x, double y, double z)
   //extrapolate to vertex
   TrackParam trackParamAtVertex(mTrack.first());  //mTrack.first() = parameters at first cluster
   TrackExtrap::extrapToVertex(trackParamAtVertex, x, y, z, 0., 0.);
-  mMomentum4D.SetPx(trackParamAtVertex.px());  //initialise les paramètres du 4-vecteur au vertex ?
+  mMomentum4D.SetPx(trackParamAtVertex.px());  
   mMomentum4D.SetPy(trackParamAtVertex.py());
   mMomentum4D.SetPz(trackParamAtVertex.pz());
   mMomentum4D.SetM(muMass);
@@ -69,8 +69,8 @@ void ExtendedTrack::extrapToVertex(double x, double y, double z)
   //extrapolate to DCA (Distance of Closest Approach)
   TrackParam trackParamAtDCA(mTrack.first());
   TrackExtrap::extrapToVertexWithoutBranson(trackParamAtDCA, z);
-  double dcaX = trackParamAtDCA.getNonBendingCoor() - x;  //sur plan non courbe
-  double dcaY = trackParamAtDCA.getBendingCoor() - y;  //sur plan courbe
+  double dcaX = trackParamAtDCA.getNonBendingCoor() - x; 
+  double dcaY = trackParamAtDCA.getBendingCoor() - y; 
   mDCA = std::sqrt(dcaX * dcaX + dcaY * dcaY);
 
   //extrapolate to the end of the absorber
@@ -81,7 +81,7 @@ void ExtendedTrack::extrapToVertex(double x, double y, double z)
   mRabs = std::sqrt(xAbs * xAbs + yAbs * yAbs);
 }
 
-bool ExtendedTrack::operator==(const ExtendedTrack& track) const  //PAS COMPRIS
+bool ExtendedTrack::operator==(const ExtendedTrack& track) const  
 {
   return areEqual(*this, track, sChi2Max);
 }
@@ -101,23 +101,23 @@ bool ExtendedTrack::isMatching(const ExtendedTrack& track) const
   return areMatching(*this, track, sChi2Max);
 }
 
-bool areEqual(const ExtendedTrack& t1, const ExtendedTrack& t2, double chi2Max)  //compare deux traces avec un Chi2
+bool areEqual(const ExtendedTrack& t1, const ExtendedTrack& t2, double chi2Max) 
 {
-  const auto& clusters1 = t1.getClusters();  //recupere les clusters du 1
-  const auto& clusters2 = t2.getClusters();  //recupere les clusters du 2
-  if (clusters1.size() != clusters2.size()) {  //si la taille est differente ?
+  const auto& clusters1 = t1.getClusters();  
+  const auto& clusters2 = t2.getClusters();  
+  if (clusters1.size() != clusters2.size()) {  
     return false;
   }
-  for (size_t iCl = 0; iCl != clusters1.size(); ++iCl) {  //sur l'ensemble des clusters
+  for (size_t iCl = 0; iCl != clusters1.size(); ++iCl) { 
     const auto& cl1 = clusters1[iCl];
     const auto& cl2 = clusters2[iCl];
-    if (cl1.getDEId() != cl2.getDEId()) {  //si l'ID des clusters est different ?
+    if (cl1.getDEId() != cl2.getDEId()) { 
       return false;
     }
-    double dx = cl1.getX() - cl2.getX();  //delta x et y des clusters
+    double dx = cl1.getX() - cl2.getX(); 
     double dy = cl1.getY() - cl2.getY();
-    double chi2 = dx * dx / (cl1.getEx2() + cl2.getEx2()) + dy * dy / (cl1.getEy2() + cl2.getEy2());  //calcul du Chi2
-    if (chi2 > chi2Max) {  //ne doit pas dépasser le Chi2Max
+    double chi2 = dx * dx / (cl1.getEx2() + cl2.getEx2()) + dy * dy / (cl1.getEy2() + cl2.getEy2()); 
+    if (chi2 > chi2Max) {  
       return false;
     }
   }

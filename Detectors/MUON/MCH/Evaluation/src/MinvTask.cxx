@@ -9,6 +9,7 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+#include "MCHBase/Trackable.h"
 #include "Histogrammer.h"
 #include "MinvTask.h"
 #include "Framework/CallbackService.h"
@@ -91,11 +92,7 @@ void MinvTask::fillHistos(gsl::span<const ExtendedTrack> tracks)
       auto lv12 = lv1 + lv2;
       if (tracks[trk1].P().Eta() > -4. && tracks[trk1].P().Eta() < -2.5 && tracks[trk2].P().Eta() > -4. && tracks[trk2].P().Eta() < -2.5) {
         if (lv12.Rapidity() > -4 && lv12.Rapidity() < -2.5) {
-          //if (lv12.M() > 3.0 && lv12.M() < 3.2) { // 3.06 3.1
-            mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
-          //} else {
-            //continue;
-          //}
+          mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
         } else {
           continue;
         }
@@ -135,6 +132,9 @@ std::vector<ExtendedTrack> MinvTask::getExtendedTracks(const ROFRecord& rof,
                                                        gsl::span<const Cluster> tfClusters) const
 {
   const auto mchTracks = tfTracks.subspan(rof.getFirstIdx(), rof.getNEntries());
+  // std::cout << "CLUSTERS SIZE TF : " << tfClusters.size() << std::endl;  // tous les clusters
+  // std::cout << "TRACKS SIZE TF : " << tfTracks.size() << std::endl;
+  // std::cout << "MCHTRACKS SIZE TF : " << mchTracks.size() << std::endl;
   return convert(mchTracks, tfClusters);
 }
 
@@ -146,9 +146,27 @@ void MinvTask::run(ProcessingContext& pc)
   }
   auto rofs = pc.inputs().get<gsl::span<ROFRecord>>("rofs");
   auto tracks = pc.inputs().get<gsl::span<TrackMCH>>("tracks");
-  auto clusters = pc.inputs().get<gsl::span<Cluster>>("clusters"); 
+  auto clusters = pc.inputs().get<gsl::span<Cluster>>("clusters");
   int compt = 0;
   int comptbis = 0;
+
+  std::vector<int> Clust;
+  std::array<int, 10> ClustperCh;
+  std::vector<int> Test;
+
+  ofstream file;
+  file.open("TEST.txt");
+
+  for (auto j = 0; j < tracks.size(); j++) {
+    Clust.push_back(tracks[j].getNClusters());
+    ClustperCh.fill(tracks[j].getNClusters());
+    // file << "CLUSTERS PER TRACKS : " << Clust[j] << "\n";
+    for (auto h = 0; h > tracks[j].getNClusters(); h++) {
+      Test.push_back(tracks[j].getFirstClusterIdx());
+      Test.push_back(tracks[j].getLastClusterIdx());
+      file << "TEST ID CLUSTERS : " << Test[h] << "\n";
+    }
+  }
 
   for (auto i = 0; i < rofs.size(); i++) {
     auto etracks = getExtendedTracks(rofs[i], tracks, clusters);
@@ -157,6 +175,8 @@ void MinvTask::run(ProcessingContext& pc)
     } else if (etracks.size() == 0) {
       comptbis += 1;
     }
+
+    file << "ISTRACKABLE : " << o2::mch::isTrackable(ClustperCh, {true, true, true, true, true}, true) << "\n";
     dump(etracks);
     fillHistos(etracks);
   }

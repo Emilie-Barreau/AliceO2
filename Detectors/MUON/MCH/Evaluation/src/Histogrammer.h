@@ -26,6 +26,7 @@ class Histogrammer
  private:
   std::vector<TH1*> mHistos;
   std::vector<TH2*> mHistos2;
+  std::vector<TH1*> mMinv;
 };
 
 #endif

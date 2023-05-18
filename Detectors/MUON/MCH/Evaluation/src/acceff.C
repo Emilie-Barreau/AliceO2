@@ -78,6 +78,15 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   std::cout << "acceff y : " << acceff_minvy * 100 << " \%" << std::endl;
   hmy_reco->Divide(hmy_gen);
 
+  // TEST INTEGRALE
+  TH2* htest_gen = static_cast<TH2*>(f_gen->Get("test pt"));
+  TH2* htest_reco = static_cast<TH2*>(f_reco->Get("test pt"));
+  double acceff_test = htest_reco->GetEntries() / htest_gen->GetEntries();
+  std::cout << "=====================================================" << std::endl;
+  std::cout << "Entries gen et reco : " << htest_gen->GetEntries() << " et " << htest_reco->GetEntries() << std::endl;
+  std::cout << "acceff test : " << acceff_test * 100 << " \%" << std::endl;
+  htest_reco->Divide(htest_gen);
+
   c->cd(1);
   hpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
   hpt_reco->SetYTitle("A.e");
@@ -92,6 +101,9 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   hm_reco->SetXTitle("invariant mass (GeV/c)");
   hm_reco->SetYTitle("A.e");
   hm_reco->Draw("HIST E");
+
+  c->cd(4);
+  htest_reco->Draw();
 
   c->cd(5);
   hmpt_reco->SetXTitle("p_{T} (GeV/c^{2})");

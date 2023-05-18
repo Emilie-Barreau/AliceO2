@@ -56,7 +56,7 @@ int main()
   myfile.close();
   myfile2.close();
 
-  // loop for 2D histograms -> dimuons coming from J/Psi
+  // loop for 1D/2D histograms -> dimuons coming from J/Psi
   for (int Evt = 0; Evt < r.getNEvents(0); Evt++) {
     for (int mu1 = 0; mu1 < r.getTracks(Evt).size(); mu1++) {
       auto t1 = r.getTrack(Evt, mu1);
