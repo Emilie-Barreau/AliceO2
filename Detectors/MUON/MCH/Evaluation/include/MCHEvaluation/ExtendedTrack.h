@@ -40,7 +40,7 @@ class ExtendedTrack
    * The given TrackMCH will be extrapolated to the given vertex {x,y,z}.
    * Throw an exception if the track fitting fails
    */
-  ExtendedTrack(const TrackMCH& track,  //fonction qui definit une extended track
+  ExtendedTrack(const TrackMCH& track,  
                 gsl::span<const Cluster>& clusters,
                 double x, double y, double z);
 
@@ -48,7 +48,7 @@ class ExtendedTrack
 
   bool isMatching(const ExtendedTrack& track) const;
 
-  const std::vector<Cluster>& getClusters() const { return mClusters; }  //vecteur des clusters d'une trace
+  const std::vector<Cluster>& getClusters() const { return mClusters; }  
 
   std::string asString() const;
 
@@ -65,12 +65,12 @@ class ExtendedTrack
   double getRabs() const { return mRabs; }
   double getCharge() const { return param().getCharge(); }
 
-  const ROOT::Math::PxPyPzMVector& P() const { return mMomentum4D; }  //Lorentz vecteur des particules
+  const ROOT::Math::PxPyPzMVector& P() const { return mMomentum4D; } 
 
-  double getNormalizedChi2() const;  //fonction de normalisation du Chi2
+  double getNormalizedChi2() const;  
 
  private:
-  void extrapToVertex(double x, double y, double z);  //fonction d'extrapolation au premier vertex de la trace MCH
+  void extrapToVertex(double x, double y, double z);  
 
  private:
   Track mTrack{}; 
