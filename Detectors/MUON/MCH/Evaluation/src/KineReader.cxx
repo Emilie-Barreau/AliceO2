@@ -78,7 +78,7 @@ int main()
   }
 
   // saving the histograms
-  histogrammer.save("Histos.root");
+  histogrammer.save("Histos_gen.root");
 
   return 0;
 }

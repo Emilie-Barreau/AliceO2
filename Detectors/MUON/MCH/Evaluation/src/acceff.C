@@ -8,8 +8,8 @@
 //
 //Compares and gives the acceptence/efficiency
 
-void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.root",
-            const char* freco = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_bis.root") 
+void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_gen.root",
+            const char* freco = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_reco.root") 
 {
   /*TFile f1(fgen);
   TFile f2(freco);
@@ -20,7 +20,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   TFile* f_reco = TFile::Open(freco);
 
   TCanvas *c = new TCanvas();
-  c->Divide(2,3);
+  c->Divide(2,2);
 
   // For pT
   TH1* hpt_gen = static_cast<TH1*>(f_gen->Get("pT"));
@@ -31,6 +31,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   std::cout << "=====================================================" << std::endl;
   std::cout << "Entries gen et reco : " << hpt_gen->GetEntries() << " et " << hpt_reco->GetEntries() << std::endl;
   std::cout << "acceff pT : " << acceff_pt * 100 << " \%" << std::endl;
+  std::cout << "Test Integral : " << hpt_gen->Integral() << std::endl;
   hpt_reco->Divide(hpt_gen);
 
   // For y
@@ -79,13 +80,25 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   hmy_reco->Divide(hmy_gen);
 
   // TEST INTEGRALE
-  TH2* htest_gen = static_cast<TH2*>(f_gen->Get("test pt"));
-  TH2* htest_reco = static_cast<TH2*>(f_reco->Get("test pt"));
-  double acceff_test = htest_reco->GetEntries() / htest_gen->GetEntries();
+  TH2* htestpt_gen = static_cast<TH2*>(f_gen->Get("pT Integral"));
+  TH2* htestpt_reco = static_cast<TH2*>(f_reco->Get("pT Integral"));
+  htestpt_gen->Sumw2();
+  htestpt_reco->Sumw2();
+  double acceff_testpt = htestpt_reco->GetEntries() / htestpt_gen->GetEntries();
   std::cout << "=====================================================" << std::endl;
-  std::cout << "Entries gen et reco : " << htest_gen->GetEntries() << " et " << htest_reco->GetEntries() << std::endl;
-  std::cout << "acceff test : " << acceff_test * 100 << " \%" << std::endl;
-  htest_reco->Divide(htest_gen);
+  std::cout << "Entries gen et reco : " << htestpt_gen->GetEntries() << " et " << htestpt_reco->GetEntries() << std::endl;
+  std::cout << "acceff test : " << acceff_testpt * 100 << " \%" << std::endl;
+  htestpt_reco->Divide(htestpt_gen);
+
+  TH2* htesty_gen = static_cast<TH2*>(f_gen->Get("y Integral"));
+  TH2* htesty_reco = static_cast<TH2*>(f_reco->Get("y Integral"));
+  htesty_gen->Sumw2();
+  htesty_reco->Sumw2();
+  double acceff_testy = htesty_reco->GetEntries() / htesty_gen->GetEntries();
+  std::cout << "=====================================================" << std::endl;
+  std::cout << "Entries gen et reco : " << htesty_gen->GetEntries() << " et " << htesty_reco->GetEntries() << std::endl;
+  std::cout << "acceff test : " << acceff_testy * 100 << " \%" << std::endl;
+  htesty_reco->Divide(htesty_gen);
 
   c->cd(1);
   hpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
@@ -97,21 +110,28 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos.
   hy_reco->SetYTitle("A.e");
   hy_reco->Draw("HIST E");
 
-  c->cd(3);
+  /*c->cd(3);
   hm_reco->SetXTitle("invariant mass (GeV/c)");
   hm_reco->SetYTitle("A.e");
-  hm_reco->Draw("HIST E");
+  hm_reco->Draw("HIST E");*/
+
+  c->cd(3);
+  htestpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
+  htestpt_reco->SetYTitle("A.e");
+  htestpt_reco->Draw("HIST E");
 
   c->cd(4);
-  htest_reco->Draw();
+  htesty_reco->SetXTitle("y");
+  htesty_reco->SetYTitle("A.e");
+  htesty_reco->Draw("HIST E");
 
-  c->cd(5);
+  /*c->cd(6);
   hmpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
   hmpt_reco->SetYTitle("invariant mass (GeV/c)");
   hmpt_reco->Draw("COLZ");
 
-  c->cd(6);
+  c->cd(7);
   hmy_reco->SetXTitle("y");
   hmy_reco->SetYTitle("invariant mass (GeV/c)");
-  hmy_reco->Draw("COLZ");
+  hmy_reco->Draw("COLZ");*/
 }
