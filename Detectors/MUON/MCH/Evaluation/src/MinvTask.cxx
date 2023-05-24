@@ -66,7 +66,7 @@ void MinvTask::init(InitContext& ic)
       h2->Write();
     }
     mOutputRootFile->Close();
-    mHistogrammer.save("Histos_bis.root");
+    mHistogrammer.save("Histos_reco.root");
   };
 
   ic.services().get<CallbackService>().set<CallbackService::Id::Stop>(stop);
@@ -150,7 +150,6 @@ void MinvTask::run(ProcessingContext& pc)
   int compt = 0;
   int comptbis = 0;
 
-  std::vector<int> Clust;
   std::array<int, 10> ClustperCh;
   std::vector<int> Test;
 
@@ -158,25 +157,66 @@ void MinvTask::run(ProcessingContext& pc)
   file.open("TEST.txt");
 
   for (auto j = 0; j < tracks.size(); j++) {
-    Clust.push_back(tracks[j].getNClusters());
     ClustperCh.fill(tracks[j].getNClusters());
-    // file << "CLUSTERS PER TRACKS : " << Clust[j] << "\n";
     for (auto h = 0; h > tracks[j].getNClusters(); h++) {
       Test.push_back(tracks[j].getFirstClusterIdx());
       Test.push_back(tracks[j].getLastClusterIdx());
-      file << "TEST ID CLUSTERS : " << Test[h] << "\n";
+      // file << "TEST ID CLUSTERS : " << Test[h] << "\n";
     }
   }
 
+  std::vector<Cluster> clust;
+  std::vector<int> Clust_ID;
+  std::vector<int> DE_Id;
+  std::vector<int> Ch_ID;
+  
+  std::array<int, 10> ClustperTrack;
+  std::array<int, 10> TestClust = {1, 1, 1, 1, 1, 1, 0, 1, 0, 1};
+  //{1, 1, 1, 1, 1, 1, 2, 2, 2, 2} is trackable
+  //{1, 1, 1, 1, 1, 1, 1, 1, 1, 1} is trackable
+  //{1, 1, 1, 1, 1, 1, 1, 1, 1, 0} is trackable (idem Ch 7, 8, 9)
+  //{1, 0, 1, 0, 1, 0, 1, 0, 1, 0} is trackable (idem inverse)
+  //{1, 1, 1, 1, 1, 1, 1, 1, 0, 0} is not trackable (idem St 4)
+  //{0, 0, 1, 1, 1, 1, 1, 1, 1, 1} is not trackable (idem St 2, 3 ...)
+  //{0, 0, 1, 1, 1, 1, 0, 2, 0, 0} is not trackable
+  //{0, 0, 1, 1, 1, 1, 2, 2, 0, 0} is not trackable
+  //{1, 1, 1, 1, 1, 1, 0, 2, 0, 0} is not trackable (moreCandidates true and false)
+  //{1, 1, 1, 1, 1, 1, 0, 1, 0, 1} is not trackable (moreCandidates = false)
+  //{1, 1, 1, 1, 1, 1, 0, 1, 0, 1} is trackable (moreCandidates = true)
+  // need at least one hit per station to be trackable
+  // for moreCandidates = false : need one hit per chamber for nb 7, 8, 9, 10
+
+  int compt_clust = 0;
   for (auto i = 0; i < rofs.size(); i++) {
     auto etracks = getExtendedTracks(rofs[i], tracks, clusters);
+    for (auto j = 0; j < etracks.size(); j++) {
+      std::cout << "TRACKS.SIZE : " << etracks.size() << std::endl;
+      auto etracksbis = etracks[j];
+      clust = etracksbis.getClusters();
+      for (auto h = 0; h < clust.size(); h++) {
+        file << "CLUSTER : " << clust[h] << "\n";
+        compt_clust += 1;
+        Clust_ID.emplace_back(clust[h].getClusterIndex());
+        DE_Id.emplace_back(clust[h].getDEId());
+        Ch_ID.emplace_back(clust[h].getChamberId());
+        //file << "DETECTION ELEMENT ID : " << clust[h].getDEId() << "\n";
+        //file << "CHAMBER ID : " << clust[h].getChamberId() << "\n";
+        file << "CHAMBER ID : " << clust[h].getChamberId() << "\n";
+        file << "DE ID & CLUST : " << clust[h].getIdAsString() << "\n";
+      }
+    }
+    //file << "CLUSTERS : " << clusters.size() << "\n";
+    //file << "CLUSTERS SIZE : " << clust.size() << "\n";
+    //file << "COMPT_CLUST SIZE : " << compt_clust << "\n";
+
     if (etracks.size() != 0) {
       compt += 1;
+      //file << "ETRACK =! 0 : " << compt << "\n";
     } else if (etracks.size() == 0) {
       comptbis += 1;
+      //file << "ETRACK = 0 : " << comptbis << "\n";
     }
-
-    file << "ISTRACKABLE : " << o2::mch::isTrackable(ClustperCh, {true, true, true, true, true}, true) << "\n";
+    // file << "ISTRACKABLE : " << o2::mch::isTrackable(TestClust, {true, true, true, true, true}, false) << "\n";
     dump(etracks);
     fillHistos(etracks);
   }

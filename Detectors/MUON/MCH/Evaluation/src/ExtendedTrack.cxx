@@ -43,7 +43,7 @@ ExtendedTrack::ExtendedTrack(const TrackMCH& track,
                              double x, double y, double z) 
 {
   auto s = clusters.subspan(track.getFirstClusterIdx(), 
-                            track.getNClusters());
+                            track.getNClusters());  // clusters are put in subvectors track by track 
 
   mClusters.assign(begin(s), end(s));  
   for (const auto& cluster : mClusters) {

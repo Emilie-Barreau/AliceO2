@@ -54,7 +54,7 @@ struct Cluster {
   double getEy2() const { return getEy() * getEy(); }
 
   /// Return the unique ID of this cluster in human readable form
-  std::string getIdAsString() const { return "DE" + std::to_string(getDEId()) + "#" + std::to_string(getClusterIndex()); }
+  std::string getIdAsString() const { return "DE " + std::to_string(getDEId()) + " # " + std::to_string(getClusterIndex()); }
 
   /// Return the chamber ID (0..), part of the unique ID
   int getChamberId() const { return getChamberId(uid); }

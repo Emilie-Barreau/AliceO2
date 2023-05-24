@@ -31,9 +31,9 @@ bool isTrackable(std::array<int, 10> itemsPerChamber,
   int nChHitInSt5 = (itemsPerChamber[8] > 0 ? 1 : 0) + (itemsPerChamber[9] > 0 ? 1 : 0);
 
   if (moreCandidates) {
-    return nChHitInSt4 + nChHitInSt5 >= 2;
+    return nChHitInSt4 + nChHitInSt5 >= 2; //true
   } else {
-    return nChHitInSt4 == 2 || nChHitInSt5 == 2;
+    return nChHitInSt4 == 2 || nChHitInSt5 == 2; //false
   }
   return true;
 }
