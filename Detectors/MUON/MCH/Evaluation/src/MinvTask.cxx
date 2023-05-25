@@ -66,7 +66,7 @@ void MinvTask::init(InitContext& ic)
       h2->Write();
     }
     mOutputRootFile->Close();
-    mHistogrammer.save("Histos_reco.root");
+    mHistogrammer.save("Histos_reco_cut.root");
   };
 
   ic.services().get<CallbackService>().set<CallbackService::Id::Stop>(stop);
@@ -147,31 +147,10 @@ void MinvTask::run(ProcessingContext& pc)
   auto rofs = pc.inputs().get<gsl::span<ROFRecord>>("rofs");
   auto tracks = pc.inputs().get<gsl::span<TrackMCH>>("tracks");
   auto clusters = pc.inputs().get<gsl::span<Cluster>>("clusters");
-  int compt = 0;
-  int comptbis = 0;
-
-  std::array<int, 10> ClustperCh;
-  std::vector<int> Test;
 
   ofstream file;
   file.open("IDENTITY.txt");
 
-  for (auto j = 0; j < tracks.size(); j++) {
-    ClustperCh.fill(tracks[j].getNClusters());
-    for (auto h = 0; h > tracks[j].getNClusters(); h++) {
-      Test.push_back(tracks[j].getFirstClusterIdx());
-      Test.push_back(tracks[j].getLastClusterIdx());
-      // file << "TEST ID CLUSTERS : " << Test[h] << "\n";
-    }
-  }
-
-  std::vector<Cluster> clust;
-  std::vector<int> Clust_ID;
-  std::vector<int> DE_Id;
-  std::vector<int> Ch_ID;
-
-  // std::array<int, 10> ClustperTrack;
-  std::array<int, 10> TestClust = {1, 1, 1, 1, 1, 1, 0, 1, 0, 1};
   //{1, 1, 1, 1, 1, 1, 2, 2, 2, 2} is trackable
   //{1, 1, 1, 1, 1, 1, 1, 1, 1, 1} is trackable
   //{1, 1, 1, 1, 1, 1, 1, 1, 1, 0} is trackable (idem Ch 7, 8, 9)
@@ -186,68 +165,58 @@ void MinvTask::run(ProcessingContext& pc)
   // need at least one hit per station to be trackable
   // for moreCandidates = false : need one hit per chamber for nb 7, 8, 9, 10
 
-  std::array<int, 10> ClustperTrack = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  std::vector<Cluster> clust;
+  std::vector<int> Clust_ID;
+  std::vector<int> DE_ID;
+  std::vector<int> Ch_ID;
 
-  std::vector<std::array<int, 10>> Total_Clusters;
+  int compt_t1 = 0;
+  int compt_t2 = 0;
+  int compt_clust1 = 0;
+  int compt_clust2 = 0;
 
-  int compt_clust = 0;
+  std::array<int, 10> ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ClusterperChamber
+
   for (auto i = 0; i < rofs.size(); i++) {
+    // auto sppan = clusters.subspan(0, 621500);
     auto etracks = getExtendedTracks(rofs[i], tracks, clusters);
+    std::vector<o2::mch::eval::ExtendedTrack> etrackables;
+    std::vector<o2::mch::eval::ExtendedTrack> etracksbis;
+    std::vector<Cluster> clst_survivors;
     for (auto ext = 0; ext < etracks.size(); ext++) {
-      compt +=1;
-      auto etracksbis = etracks[ext];
-      clust = etracksbis.getClusters();
-      // file << "CLUST SIZE : " << clust.size() << "\n";
+      compt_t1 +=1;
+      auto etrack = etracks[ext];
+      clust = etrack.getClusters();
+      ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      // clust_rof.insert(clust_rof.end(), clust.begin(), clust.end());
       for (auto clst = 0; clst < clust.size(); clst++) {
-        ClustperTrack = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        compt_clust += 1;
+        compt_clust1 +=1;
         Clust_ID.emplace_back(clust[clst].getClusterIndex());
-        DE_Id.emplace_back(clust[clst].getDEId());
+        DE_ID.emplace_back(clust[clst].getDEId());
         Ch_ID.emplace_back(clust[clst].getChamberId());
-        file << "=================================" << "\n";
-        file << "Ch " << Ch_ID[clst] << "\n";
-        file << clust[clst].getIdAsString() << "\n";
-
-        switch (Ch_ID[clst]) {
-          case 0:
-            ClustperTrack[0] += 1; //ClustperCh
-            break;
-          case 1:
-            ClustperTrack[1] += 1;
-            break;
-          case 2:
-            ClustperTrack[2] += 1;
-            break;
-          case 3:
-            ClustperTrack[3] += 1;
-            break;
-          case 4:
-            ClustperTrack[4] += 1;
-            break;
-          case 5:
-            ClustperTrack[5] += 1;
-            break;
-          case 6:
-            ClustperTrack[6] += 1;
-            break;
-          case 7:
-            ClustperTrack[7] += 1;
-            break;
-          case 8:
-            ClustperTrack[8] += 1;
-            break;
-          case 9:
-            ClustperTrack[9] += 1;
-            break;
+        // file << "=================================" << "\n";
+        // file << "Ch " << Ch_ID[clst] << "\n";
+        // file << clust[clst].getIdAsString() << "\n";
+        if (clust[clst].getChamberId() == 0) {
+          ClustperChamber[clust[clst].getChamberId()] +=0;
+        } else {
+          ClustperChamber[clust[clst].getChamberId()]+=1;
+          //clst_survivors.emplace_back(clust[clst]);
+          compt_clust2 +=1;
         }
       }
-      Total_Clusters.emplace_back(ClustperCh);
-      file << "ISTRACKABLE : " << o2::mch::isTrackable(Total_Clusters[ext], {true, true, true, true, true}, false) << "\n";
+      bool trackable = o2::mch::isTrackable(ClustperChamber, {true, true, true, true, true}, false);
+      if (trackable == true) {
+        etrackables.emplace_back(etrack);
+        compt_t2 +=1;
+        //clst_survivors.emplace_back(etrackables[ext].getClusters());
+      }
     }
-    //file << "TOTAL CLUSTERS : " << Total_Clusters.size() << "\n"; //verification : size vector = nb of tracks
-    //file << "TOTAL TRACKS : " << compt << "\n";
-    dump(etracks);
-    fillHistos(etracks);
+    file << compt_t2 << " are trackables on " << compt_t1 << "\n";
+    //file << compt_clust2 << " clusters are survivors over " << compt_clust1 << "\n";
+    //etracksbis.emplace_back(ExtendedTrack(clst_survivors, 0., 0., 0.)); 
+    dump(etrackables);
+    fillHistos(etrackables);
   }
 }
 } // namespace o2::mch::eval

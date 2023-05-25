@@ -44,6 +44,9 @@ class ExtendedTrack
                 gsl::span<const Cluster>& clusters,
                 double x, double y, double z);
 
+  ExtendedTrack(gsl::span<const Cluster> clusters,
+                double x, double y, double z);
+
   bool operator==(const ExtendedTrack& track) const;
 
   bool isMatching(const ExtendedTrack& track) const;
@@ -70,6 +73,9 @@ class ExtendedTrack
   double getNormalizedChi2() const;  
 
  private:
+  void build(gsl::span<const Cluster> clusters,
+                double x, double y, double z);
+
   void extrapToVertex(double x, double y, double z);  
 
  private:
