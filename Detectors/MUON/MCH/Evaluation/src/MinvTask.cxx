@@ -154,7 +154,7 @@ void MinvTask::run(ProcessingContext& pc)
   std::vector<int> Test;
 
   ofstream file;
-  file.open("TEST.txt");
+  file.open("IDENTITY.txt");
 
   for (auto j = 0; j < tracks.size(); j++) {
     ClustperCh.fill(tracks[j].getNClusters());
@@ -169,8 +169,8 @@ void MinvTask::run(ProcessingContext& pc)
   std::vector<int> Clust_ID;
   std::vector<int> DE_Id;
   std::vector<int> Ch_ID;
-  
-  std::array<int, 10> ClustperTrack;
+
+  // std::array<int, 10> ClustperTrack;
   std::array<int, 10> TestClust = {1, 1, 1, 1, 1, 1, 0, 1, 0, 1};
   //{1, 1, 1, 1, 1, 1, 2, 2, 2, 2} is trackable
   //{1, 1, 1, 1, 1, 1, 1, 1, 1, 1} is trackable
@@ -186,37 +186,66 @@ void MinvTask::run(ProcessingContext& pc)
   // need at least one hit per station to be trackable
   // for moreCandidates = false : need one hit per chamber for nb 7, 8, 9, 10
 
+  std::array<int, 10> ClustperTrack = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+  std::vector<std::array<int, 10>> Total_Clusters;
+
   int compt_clust = 0;
   for (auto i = 0; i < rofs.size(); i++) {
     auto etracks = getExtendedTracks(rofs[i], tracks, clusters);
-    for (auto j = 0; j < etracks.size(); j++) {
-      std::cout << "TRACKS.SIZE : " << etracks.size() << std::endl;
-      auto etracksbis = etracks[j];
+    for (auto ext = 0; ext < etracks.size(); ext++) {
+      compt +=1;
+      auto etracksbis = etracks[ext];
       clust = etracksbis.getClusters();
-      for (auto h = 0; h < clust.size(); h++) {
-        file << "CLUSTER : " << clust[h] << "\n";
+      // file << "CLUST SIZE : " << clust.size() << "\n";
+      for (auto clst = 0; clst < clust.size(); clst++) {
+        ClustperTrack = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         compt_clust += 1;
-        Clust_ID.emplace_back(clust[h].getClusterIndex());
-        DE_Id.emplace_back(clust[h].getDEId());
-        Ch_ID.emplace_back(clust[h].getChamberId());
-        //file << "DETECTION ELEMENT ID : " << clust[h].getDEId() << "\n";
-        //file << "CHAMBER ID : " << clust[h].getChamberId() << "\n";
-        file << "CHAMBER ID : " << clust[h].getChamberId() << "\n";
-        file << "DE ID & CLUST : " << clust[h].getIdAsString() << "\n";
-      }
-    }
-    //file << "CLUSTERS : " << clusters.size() << "\n";
-    //file << "CLUSTERS SIZE : " << clust.size() << "\n";
-    //file << "COMPT_CLUST SIZE : " << compt_clust << "\n";
+        Clust_ID.emplace_back(clust[clst].getClusterIndex());
+        DE_Id.emplace_back(clust[clst].getDEId());
+        Ch_ID.emplace_back(clust[clst].getChamberId());
+        file << "=================================" << "\n";
+        file << "Ch " << Ch_ID[clst] << "\n";
+        file << clust[clst].getIdAsString() << "\n";
 
-    if (etracks.size() != 0) {
-      compt += 1;
-      //file << "ETRACK =! 0 : " << compt << "\n";
-    } else if (etracks.size() == 0) {
-      comptbis += 1;
-      //file << "ETRACK = 0 : " << comptbis << "\n";
+        switch (Ch_ID[clst]) {
+          case 0:
+            ClustperTrack[0] += 1; //ClustperCh
+            break;
+          case 1:
+            ClustperTrack[1] += 1;
+            break;
+          case 2:
+            ClustperTrack[2] += 1;
+            break;
+          case 3:
+            ClustperTrack[3] += 1;
+            break;
+          case 4:
+            ClustperTrack[4] += 1;
+            break;
+          case 5:
+            ClustperTrack[5] += 1;
+            break;
+          case 6:
+            ClustperTrack[6] += 1;
+            break;
+          case 7:
+            ClustperTrack[7] += 1;
+            break;
+          case 8:
+            ClustperTrack[8] += 1;
+            break;
+          case 9:
+            ClustperTrack[9] += 1;
+            break;
+        }
+      }
+      Total_Clusters.emplace_back(ClustperCh);
+      file << "ISTRACKABLE : " << o2::mch::isTrackable(Total_Clusters[ext], {true, true, true, true, true}, false) << "\n";
     }
-    // file << "ISTRACKABLE : " << o2::mch::isTrackable(TestClust, {true, true, true, true, true}, false) << "\n";
+    //file << "TOTAL CLUSTERS : " << Total_Clusters.size() << "\n"; //verification : size vector = nb of tracks
+    //file << "TOTAL TRACKS : " << compt << "\n";
     dump(etracks);
     fillHistos(etracks);
   }
