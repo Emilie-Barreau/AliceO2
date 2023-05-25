@@ -9,7 +9,8 @@
 //Compares and gives the acceptence/efficiency
 
 void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_gen.root",
-            const char* freco = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_reco.root") 
+            const char* freco = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_reco.root",
+            const char* freco_cut = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_reco_cut.root") 
 {
   /*TFile f1(fgen);
   TFile f2(freco);
@@ -18,6 +19,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
 
   TFile* f_gen = TFile::Open(fgen);
   TFile* f_reco = TFile::Open(freco);
+  TFile* f_reco_cut = TFile::Open(freco_cut);
 
   TCanvas *c = new TCanvas();
   c->Divide(2,2);
@@ -31,8 +33,15 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   std::cout << "=====================================================" << std::endl;
   std::cout << "Entries gen et reco : " << hpt_gen->GetEntries() << " et " << hpt_reco->GetEntries() << std::endl;
   std::cout << "acceff pT : " << acceff_pt * 100 << " \%" << std::endl;
-  std::cout << "Test Integral : " << hpt_gen->Integral() << std::endl;
   hpt_reco->Divide(hpt_gen);
+
+  TH1* hpt_reco_cut = static_cast<TH1*>(f_reco_cut->Get("pT"));
+  hpt_reco_cut->Sumw2();
+  double acceff_pt_cut = hpt_reco_cut->GetEntries() / hpt_gen->GetEntries();
+  std::cout << "=====================================================" << std::endl;
+  std::cout << "Entries gen et reco : " << hpt_gen->GetEntries() << " et " << hpt_reco_cut->GetEntries() << std::endl;
+  std::cout << "acceff pT : " << acceff_pt_cut * 100 << " \%" << std::endl;
+  hpt_reco_cut->Divide(hpt_gen);
 
   // For y
   TH1* hy_gen = static_cast<TH1*>(f_gen->Get("y"));
@@ -50,33 +59,16 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   TH1* hm_reco = static_cast<TH1*>(f_reco->Get("minv"));
   hm_gen->Sumw2();
   hm_reco->Sumw2();
-  double acceff_minv = hm_reco->GetEntries() / hm_gen->GetEntries();
-  std::cout << "=====================================================" << std::endl;
-  std::cout << "Entries gen et reco : " << hm_gen->GetEntries() << " et " << hm_reco->GetEntries() << std::endl;
-  std::cout << "acceff minv : " << acceff_minv * 100 << " \%" << std::endl;
-  /*double bin1 = hm_reco->FindBin(3.);
-  double bin2 = hm_reco->FindBin(3.25);
-  double integ = hm_reco->Integral(bin1, bin2);
-  std::cout << "Integrale : " << integ << std::endl;*/
   hm_reco->Divide(hm_gen);
-  //hm_reco->Scale(1./hm_reco->Integral());
 
   // For Invariant mass depending of pT
   TH2* hmpt_gen = static_cast<TH2*>(f_gen->Get("minv with pT"));
   TH2* hmpt_reco = static_cast<TH2*>(f_reco->Get("minv with pT"));
-  double acceff_minvpt = hmpt_reco->GetEntries() / hmpt_gen->GetEntries();
-  std::cout << "=====================================================" << std::endl;
-  std::cout << "Entries gen et reco : " << hmpt_gen->GetEntries() << " et " << hmpt_reco->GetEntries() << std::endl;
-  std::cout << "acceff pt : " << acceff_minvpt * 100 << " \%" << std::endl;
   hmpt_reco->Divide(hmpt_gen);
 
   // For Invariant mass depending of y
   TH2* hmy_gen = static_cast<TH2*>(f_gen->Get("minv with y"));
   TH2* hmy_reco = static_cast<TH2*>(f_reco->Get("minv with y"));
-  double acceff_minvy = hmy_reco->GetEntries() / hmy_gen->GetEntries();
-  std::cout << "=====================================================" << std::endl;
-  std::cout << "Entries gen et reco : " << hmy_gen->GetEntries() << " et " << hmy_reco->GetEntries() << std::endl;
-  std::cout << "acceff y : " << acceff_minvy * 100 << " \%" << std::endl;
   hmy_reco->Divide(hmy_gen);
 
   // TEST INTEGRALE
@@ -104,6 +96,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   hpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
   hpt_reco->SetYTitle("A.e");
   hpt_reco->Draw("HIST E");
+  hpt_reco_cut->Draw("SAME HIST E");
 
   c->cd(2);
   hy_reco->SetXTitle("y");
