@@ -181,13 +181,13 @@ void MinvTask::run(ProcessingContext& pc)
     // auto sppan = clusters.subspan(0, 621500);
     auto etracks = getExtendedTracks(rofs[i], tracks, clusters);
     std::vector<o2::mch::eval::ExtendedTrack> etrackables;
-    std::vector<o2::mch::eval::ExtendedTrack> etracksbis;
-    std::vector<Cluster> clst_survivors;
+    //std::vector<o2::mch::eval::ExtendedTrack> etracksbis;
     for (auto ext = 0; ext < etracks.size(); ext++) {
       compt_t1 +=1;
       auto etrack = etracks[ext];
       clust = etrack.getClusters();
       ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      std::vector<Cluster> clst_survivors;
       // clust_rof.insert(clust_rof.end(), clust.begin(), clust.end());
       for (auto clst = 0; clst < clust.size(); clst++) {
         compt_clust1 +=1;
@@ -197,17 +197,19 @@ void MinvTask::run(ProcessingContext& pc)
         // file << "=================================" << "\n";
         // file << "Ch " << Ch_ID[clst] << "\n";
         // file << clust[clst].getIdAsString() << "\n";
-        if (clust[clst].getChamberId() == 0) {
+        if (clust[clst].getChamberId() == 0 || clust[clst].getChamberId() == 2 || clust[clst].getChamberId() == 4) {
           ClustperChamber[clust[clst].getChamberId()] +=0;
         } else {
           ClustperChamber[clust[clst].getChamberId()]+=1;
-          //clst_survivors.emplace_back(clust[clst]);
+          clst_survivors.emplace_back(clust[clst]);
           compt_clust2 +=1;
         }
       }
+      auto etrackbis = ExtendedTrack(clst_survivors, 0., 0., 0.);
       bool trackable = o2::mch::isTrackable(ClustperChamber, {true, true, true, true, true}, false);
       if (trackable == true) {
-        etrackables.emplace_back(etrack);
+        //etrackables.emplace_back(etrack); //methode 1
+        etrackables.emplace_back(etrackbis);
         compt_t2 +=1;
         //clst_survivors.emplace_back(etrackables[ext].getClusters());
       }

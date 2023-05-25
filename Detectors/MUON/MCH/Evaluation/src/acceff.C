@@ -54,6 +54,14 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   std::cout << "acceff y : " << acceff_y * 100 << " \%" << std::endl;
   hy_reco->Divide(hy_gen);
 
+  TH1* hy_reco_cut = static_cast<TH1*>(f_reco_cut->Get("y"));
+  hy_reco_cut->Sumw2();
+  double acceff_y_cut = hy_reco_cut->GetEntries() / hy_gen->GetEntries();
+  std::cout << "=====================================================" << std::endl;
+  std::cout << "Entries gen et reco : " << hy_gen->GetEntries() << " et " << hy_reco_cut->GetEntries() << std::endl;
+  std::cout << "acceff y : " << acceff_y_cut * 100 << " \%" << std::endl;
+  hy_reco_cut->Divide(hy_gen);
+
   // For Invariant mass
   TH1* hm_gen = static_cast<TH1*>(f_gen->Get("minv"));
   TH1* hm_reco = static_cast<TH1*>(f_reco->Get("minv"));
@@ -102,6 +110,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   hy_reco->SetXTitle("y");
   hy_reco->SetYTitle("A.e");
   hy_reco->Draw("HIST E");
+  hy_reco_cut->Draw("SAME HIST E");
 
   /*c->cd(3);
   hm_reco->SetXTitle("invariant mass (GeV/c)");
