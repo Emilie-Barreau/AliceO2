@@ -170,10 +170,10 @@ void MinvTask::run(ProcessingContext& pc)
   std::vector<int> DE_ID;
   std::vector<int> Ch_ID;
 
-  int compt_t1 = 0;
-  int compt_t2 = 0;
-  int compt_clust1 = 0;
-  int compt_clust2 = 0;
+  double compt_t1 = 0.;
+  double compt_t2 = 0.;
+  double compt_clust1 = 0.;
+  double compt_clust2 = 0.;
 
   std::array<int, 10> ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ClusterperChamber
 
@@ -181,44 +181,62 @@ void MinvTask::run(ProcessingContext& pc)
     // auto sppan = clusters.subspan(0, 621500);
     auto etracks = getExtendedTracks(rofs[i], tracks, clusters);
     std::vector<o2::mch::eval::ExtendedTrack> etrackables;
-    //std::vector<o2::mch::eval::ExtendedTrack> etracksbis;
+    // std::vector<o2::mch::eval::ExtendedTrack> etracksbis;
     for (auto ext = 0; ext < etracks.size(); ext++) {
-      compt_t1 +=1;
+      compt_t1 += 1;
       auto etrack = etracks[ext];
       clust = etrack.getClusters();
       ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
       std::vector<Cluster> clst_survivors;
       // clust_rof.insert(clust_rof.end(), clust.begin(), clust.end());
       for (auto clst = 0; clst < clust.size(); clst++) {
-        compt_clust1 +=1;
+        compt_clust1 += 1;
         Clust_ID.emplace_back(clust[clst].getClusterIndex());
         DE_ID.emplace_back(clust[clst].getDEId());
         Ch_ID.emplace_back(clust[clst].getChamberId());
-        // file << "=================================" << "\n";
+        // file << "================================="
+        //  << "\n";
         // file << "Ch " << Ch_ID[clst] << "\n";
         // file << clust[clst].getIdAsString() << "\n";
-        if (clust[clst].getChamberId() == 0 || clust[clst].getChamberId() == 2 || clust[clst].getChamberId() == 4) {
-          ClustperChamber[clust[clst].getChamberId()] +=0;
+
+        // condition to remove a DE
+        if (clust[clst].getDEId() == 900 || clust[clst].getDEId() == 913 || clust[clst].getDEId() == 1000 || clust[clst].getDEId() == 1013) {
+          ClustperChamber[clust[clst].getChamberId()] += 0;
         } else {
-          ClustperChamber[clust[clst].getChamberId()]+=1;
+          ClustperChamber[clust[clst].getChamberId()] += 1;
           clst_survivors.emplace_back(clust[clst]);
-          compt_clust2 +=1;
+          compt_clust2 += 1;
         }
+
+        // condition to remove a chamber
+        /*if (clust[clst].getChamberId() == 0 || clust[clst].getChamberId() == 2) {
+          ClustperChamber[clust[clst].getChamberId()] += 0;
+        } else {
+          ClustperChamber[clust[clst].getChamberId()] += 1;
+          clst_survivors.emplace_back(clust[clst]);
+          compt_clust2 += 1;
+        }*/
       }
       auto etrackbis = ExtendedTrack(clst_survivors, 0., 0., 0.);
       bool trackable = o2::mch::isTrackable(ClustperChamber, {true, true, true, true, true}, false);
       if (trackable == true) {
-        //etrackables.emplace_back(etrack); //methode 1
+        // etrackables.emplace_back(etrack); //methode 1
         etrackables.emplace_back(etrackbis);
-        compt_t2 +=1;
-        //clst_survivors.emplace_back(etrackables[ext].getClusters());
+        compt_t2 += 1;
       }
     }
-    file << compt_t2 << " are trackables on " << compt_t1 << "\n";
-    //file << compt_clust2 << " clusters are survivors over " << compt_clust1 << "\n";
-    //etracksbis.emplace_back(ExtendedTrack(clst_survivors, 0., 0., 0.)); 
     dump(etrackables);
     fillHistos(etrackables);
+  }
+  file << compt_t2 << " are trackables on " << compt_t1 << "\n";
+  file << compt_clust2 << " clusters have survived over " << compt_clust1 << "\n";
+  auto rapport = compt_t2 * 100 / compt_t1;
+  double limit = 10.;
+  if (100 - (compt_t2 * 100 / compt_t1) > limit) {
+    file << Form("WARNING : OVER %.f PERCENT OF TRACKS ARE LOST -> CRITICAL EFFICIENCY EXPECTED", limit)
+         << "\n";
+  } else {
+    file << Form("%.2f PERCENT OF TRACKS ARE KEPT", rapport) << "\n";
   }
 }
 } // namespace o2::mch::eval
