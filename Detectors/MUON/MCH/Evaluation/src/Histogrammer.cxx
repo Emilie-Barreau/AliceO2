@@ -12,9 +12,18 @@
 Histogrammer::Histogrammer()
 {
   // initializing bins and limits for histograms
-  mHistos.emplace_back(new TH1F("pT", "pT", 32, 0., 16.));
-  mHistos.emplace_back(new TH1F("Rapidity", "Rapidity", 15, -4., -2.5));
-  mHistos.emplace_back(new TH1F("Eta", "Eta", 100, -4.5, -2.));
+  double binEdges[]= {0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5,
+                            6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5, 10., 10.5,
+                            11., 12., 14., 16.}; //25
+  mHistos.emplace_back(new TH1F("pT", "Transverse Impulsion of dimuons", 48, 0., 16.)); //32 64
+  mHistos[0]->SetXTitle("p_{T} (GeV/c^{2}");
+  mHistos[0]->SetYTitle("#");
+
+  mHistos.emplace_back(new TH1F("y", "Rapidity of dimuons", 60, -4.2, -2.3)); //15
+  mHistos[1]->SetXTitle("y");
+  mHistos[1]->SetYTitle("#");
+
+  mHistos.emplace_back(new TH1F("Eta", "Eta", 15, -4.5, -2.));
   mHistos.emplace_back(new TH1F("Minv", "Minv", 175, 2., 3.5));
   mHistos.emplace_back(new TH1F("pT Integral", "pT Integral", 32, 0., 16.));
   mHistos.emplace_back(new TH1F("y Integral", "y Integral", 15, -4., -2.5));

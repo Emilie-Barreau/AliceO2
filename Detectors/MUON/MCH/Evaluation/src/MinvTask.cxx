@@ -19,6 +19,9 @@
 #include "Framework/ProcessingContext.h"
 #include "MCHEvaluation/ExtendedTrack.h"
 #include "MCHTracking/TrackExtrap.h"
+#include "/Users/emiliebarreau/alice/O2/Detectors/MUON/MCH/Geometry/Transformer/include/MCHGeometryTransformer/Transformations.h"
+#include "/Users/emiliebarreau/alice/O2/Detectors/MUON/MCH/Mapping/Interface/include/MCHMappingInterface/CathodeSegmentation.h"
+//#include "/Users/emiliebarreau/alice/O2/Detectors/MUON/MCH/Mapping/Interface/include/MCHMappingInterface/Segmentation.h"
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -66,6 +69,7 @@ void MinvTask::init(InitContext& ic)
       h2->Write();
     }
     mOutputRootFile->Close();
+    // mHistogrammer.save("Histos_reco.root");
     mHistogrammer.save("Histos_reco_cut.root");
   };
 
@@ -79,7 +83,7 @@ void MinvTask::fillHistos(gsl::span<const ExtendedTrack> tracks)
   // loop for 1D histograms
   for (const auto& t : tracks) {
     auto lv = getLorentzVector(t);
-    mHistogrammer.fillSingleParticleHistos(lv);
+    // mHistogrammer.fillSingleParticleHistos(lv);
   }
 
   // loop for 2D histograms
@@ -91,7 +95,9 @@ void MinvTask::fillHistos(gsl::span<const ExtendedTrack> tracks)
       auto lv2 = getLorentzVector(t2);
       auto lv12 = lv1 + lv2;
       if (tracks[trk1].P().Eta() > -4. && tracks[trk1].P().Eta() < -2.5 && tracks[trk2].P().Eta() > -4. && tracks[trk2].P().Eta() < -2.5) {
+        // mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
         if (lv12.Rapidity() > -4 && lv12.Rapidity() < -2.5) {
+          mHistogrammer.fillSingleParticleHistos(lv12);
           mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
         } else {
           continue;
@@ -175,6 +181,9 @@ void MinvTask::run(ProcessingContext& pc)
   double compt_clust1 = 0.;
   double compt_clust2 = 0.;
 
+  std::ifstream jsn("/Users/emiliebarreau/alice/TEST_50000evt/geom.json");
+  auto transformcreat = o2::mch::geo::transformationFromJSON(jsn);
+
   std::array<int, 10> ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ClusterperChamber
 
   for (auto i = 0; i < rofs.size(); i++) {
@@ -197,10 +206,27 @@ void MinvTask::run(ProcessingContext& pc)
         // file << "================================="
         //  << "\n";
         // file << "Ch " << Ch_ID[clst] << "\n";
-        // file << clust[clst].getIdAsString() << "\n";
+        file << clust[clst].getIdAsString() << "\n";
+        file << clust[clst] << "\n";
+
+        auto T3D = transformcreat(clust[clst].getDEId());
+        math_utils::Point3D<double> coord_glob(clust[clst].getX(), clust[clst].getY(), clust[clst].getZ());
+        math_utils::Point3D<double> coord_loc(0., 0., 0.);
+        T3D.MasterToLocal(coord_glob, coord_loc);
+
+        /*o2::mch::mapping::Segmentation s;
+        int PadIndexB = 0;
+        int PadIndexNB = 0;
+        s.findPadPairByPosition(coord_loc.X(), coord_loc.Y(), PadIndexB, PadIndexNB);
+        int DualSampaIdB = padDualSampaId(PadIndexB);
+        int DualSampaNB = padDualSampaId(PadIndexNB);
+        int DsIndexB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdB});
+        int DsIndexNB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdNB});
+        */
 
         // condition to remove a DE
-        if (clust[clst].getDEId() == 900 || clust[clst].getDEId() == 913 || clust[clst].getDEId() == 1000 || clust[clst].getDEId() == 1013) {
+        if (clust[clst].getDEId() == 500 || clust[clst].getDEId() == 501 || clust[clst].getDEId() == 508 || clust[clst].getDEId() == 509 || clust[clst].getDEId() == 510 || clust[clst].getDEId() == 517 ||
+            clust[clst].getDEId() == 600 || clust[clst].getDEId() == 601 || clust[clst].getDEId() == 608 || clust[clst].getDEId() == 609 || clust[clst].getDEId() == 610 || clust[clst].getDEId() == 617) {
           ClustperChamber[clust[clst].getChamberId()] += 0;
         } else {
           ClustperChamber[clust[clst].getChamberId()] += 1;
@@ -209,7 +235,7 @@ void MinvTask::run(ProcessingContext& pc)
         }
 
         // condition to remove a chamber
-        /*if (clust[clst].getChamberId() == 0 || clust[clst].getChamberId() == 2) {
+        /*if (clust[clst].getChamberId() == 9) {
           ClustperChamber[clust[clst].getChamberId()] += 0;
         } else {
           ClustperChamber[clust[clst].getChamberId()] += 1;
@@ -231,8 +257,9 @@ void MinvTask::run(ProcessingContext& pc)
   file << compt_t2 << " are trackables on " << compt_t1 << "\n";
   file << compt_clust2 << " clusters have survived over " << compt_clust1 << "\n";
   auto rapport = compt_t2 * 100 / compt_t1;
-  double limit = 10.;
+  double limit = 20.;
   if (100 - (compt_t2 * 100 / compt_t1) > limit) {
+    file << Form("%.2f PERCENT OF TRACKS ARE KEPT", rapport) << "\n";
     file << Form("WARNING : OVER %.f PERCENT OF TRACKS ARE LOST -> CRITICAL EFFICIENCY EXPECTED", limit)
          << "\n";
   } else {

@@ -40,9 +40,10 @@ int main()
       auto t = r.getTrack(evt, trk);
       auto lv = getLorentzVector(*t);
       if (t->GetPdgCode() == 13 || t->GetPdgCode() == -13) {
-        histogrammer.fillSingleParticleHistos(lv);
+        //histogrammer.fillSingleParticleHistos(lv);
       } else if (t->GetPdgCode() == 443) {
         // rap->Fill(r.getTrack(evt, trk)->GetRapidity());
+        histogrammer.fillSingleParticleHistos(lv);
       } else {
         continue;
       }
@@ -62,7 +63,8 @@ int main()
       auto t1 = r.getTrack(Evt, mu1);
       for (int mu2 = mu1 + 1; mu2 < r.getTracks(Evt).size(); mu2++) {
         auto t2 = r.getTrack(Evt, mu2);
-        if (t1->GetPdgCode() == 13 && t2->GetPdgCode() == -13 || t1->GetPdgCode() == -13 && t2->GetPdgCode() == 13) {
+        if (t1->GetPdgCode() == 13 && t2->GetPdgCode() == -13 || t1->GetPdgCode() == -13 && t2->GetPdgCode() == 13
+            || t1->GetPdgCode() == 13 && t2->GetPdgCode() == 13 || t1->GetPdgCode() == -13 && t2->GetPdgCode() == -13) {
           if (t1->isPrimary() == 1 && t2->isPrimary() == 1) {
             auto lv1 = getLorentzVector(*t1);
             auto lv2 = getLorentzVector(*t2);
