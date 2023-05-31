@@ -92,25 +92,25 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   hpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
   hpt_reco->SetYTitle("A.e");
   hpt_reco->Draw("HIST E");
-  //hpt_reco_cut->Draw("SAME HIST E");
+  hpt_reco_cut->Draw("SAME HIST E");
   hpt_reco_cut->SetLineColor(2);
-  auto legend1 = new TLegend(0.1, 0.1, 0.4, 0.22); // position x, position y, width x, width y
+  auto legend1 = new TLegend(0.1, 0.9, 0.6, 0.8); // position x, position y, width x, width y
   legend1->SetHeader(Form("A.e difference : %.3f (percent)", (acceff_pt - acceff_pt_cut) * 100));
   legend1->AddEntry(hpt_reco, "Perfect detector");
-  legend1->AddEntry(hpt_reco_cut, "DE 500, 509, 600, 609 removed");
-  //legend1->Draw();
+  legend1->AddEntry(hpt_reco_cut, "DE 500, 501, 508, 509, 510, 517 (idem 600...) removed");
+  legend1->Draw();
 
   c->cd(2);
   hy_reco->SetXTitle("y");
   hy_reco->SetYTitle("A.e");
   hy_reco->Draw("HIST E");
-  //hy_reco_cut->Draw("SAME HIST E");
+  hy_reco_cut->Draw("SAME HIST E");
   hy_reco_cut->SetLineColor(2);
-  auto legend2 = new TLegend(0.2, 0.1, 0.5, 0.22); // position x1, position y1, position x2, position y2 ?
+  auto legend2 = new TLegend(0.2, 0.9, 0.7, 0.8); // position x1, position y1, position x2, position y2 ?
   legend2->SetHeader(Form("A.e difference : %.3f (percent)", (acceff_y - acceff_y_cut) * 100));
   legend2->AddEntry(hy_reco, "Perfect detector");
-  legend2->AddEntry(hy_reco_cut, "DE 500, 509, 600, 609 removed");
-  //legend2->Draw();
+  legend2->AddEntry(hy_reco_cut, "DE 500, 501, 508, 509, 510, 517 (idem 600...) removed");
+  legend2->Draw();
 
   /*c->cd(3);
   hm_reco->SetXTitle("invariant mass (GeV/c)");
