@@ -19,9 +19,10 @@
 #include "Framework/ProcessingContext.h"
 #include "MCHEvaluation/ExtendedTrack.h"
 #include "MCHTracking/TrackExtrap.h"
-#include "/Users/emiliebarreau/alice/O2/Detectors/MUON/MCH/Geometry/Transformer/include/MCHGeometryTransformer/Transformations.h"
-#include "/Users/emiliebarreau/alice/O2/Detectors/MUON/MCH/Mapping/Interface/include/MCHMappingInterface/CathodeSegmentation.h"
-//#include "/Users/emiliebarreau/alice/O2/Detectors/MUON/MCH/Mapping/Interface/include/MCHMappingInterface/Segmentation.h"
+#include "MCHGeometryTransformer/Transformations.h"
+#include "MCHMappingInterface/CathodeSegmentation.h"
+#include "MCHMappingInterface/Segmentation.h"
+#include "MCHGlobalMapping/DsIndex.h"
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -172,9 +173,8 @@ void MinvTask::run(ProcessingContext& pc)
   // for moreCandidates = false : need one hit per chamber for nb 7, 8, 9, 10
 
   std::vector<Cluster> clust;
-  std::vector<int> Clust_ID;
-  std::vector<int> DE_ID;
-  std::vector<int> Ch_ID;
+  int De_ID;
+  int Ch;
 
   double compt_t1 = 0.;
   double compt_t2 = 0.;
@@ -200,29 +200,29 @@ void MinvTask::run(ProcessingContext& pc)
       // clust_rof.insert(clust_rof.end(), clust.begin(), clust.end());
       for (auto clst = 0; clst < clust.size(); clst++) {
         compt_clust1 += 1;
-        Clust_ID.emplace_back(clust[clst].getClusterIndex());
-        DE_ID.emplace_back(clust[clst].getDEId());
-        Ch_ID.emplace_back(clust[clst].getChamberId());
         // file << "================================="
         //  << "\n";
         // file << "Ch " << Ch_ID[clst] << "\n";
-        file << clust[clst].getIdAsString() << "\n";
-        file << clust[clst] << "\n";
+        //file << clust[clst].getIdAsString() << "\n";
+        //file << clust[clst] << "\n";
+        De_ID = clust[clst].getDEId();
+        Ch = clust[clst].getChamberId();
 
         auto T3D = transformcreat(clust[clst].getDEId());
         math_utils::Point3D<double> coord_glob(clust[clst].getX(), clust[clst].getY(), clust[clst].getZ());
         math_utils::Point3D<double> coord_loc(0., 0., 0.);
         T3D.MasterToLocal(coord_glob, coord_loc);
-
-        /*o2::mch::mapping::Segmentation s;
+        auto& s = o2::mch::mapping::segmentation(clust[clst].getDEId());
         int PadIndexB = 0;
         int PadIndexNB = 0;
         s.findPadPairByPosition(coord_loc.X(), coord_loc.Y(), PadIndexB, PadIndexNB);
-        int DualSampaIdB = padDualSampaId(PadIndexB);
-        int DualSampaNB = padDualSampaId(PadIndexNB);
-        int DsIndexB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdB});
-        int DsIndexNB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdNB});
-        */
+        int DualSampaIdB = s.padDualSampaId(PadIndexB);
+        int DualSampaIdNB = s.padDualSampaId(PadIndexNB);
+
+        file << "DS ID B : " << DualSampaIdB << " & DS ID NB : " << DualSampaIdNB << "\n";
+        uint16_t DsIndexB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdB});
+        uint16_t DsIndexNB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdNB});
+        file << "DS Index B : " << DsIndexB << " & DS Index NB : " << DsIndexNB << "\n";
 
         // condition to remove a DE
         if (clust[clst].getDEId() == 500 || clust[clst].getDEId() == 501 || clust[clst].getDEId() == 508 || clust[clst].getDEId() == 509 || clust[clst].getDEId() == 510 || clust[clst].getDEId() == 517 ||
