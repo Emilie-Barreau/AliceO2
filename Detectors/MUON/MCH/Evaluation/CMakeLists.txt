@@ -24,6 +24,9 @@ o2_add_library(MCHEvaluation
                   O2::DPLUtils
                   O2::Framework
                   O2::MCHTracking
+                  O2::MCHGeometryTransformer
+                  O2::MCHMappingInterface
+                  O2::MCHGlobalMapping
                   fmt::fmt)
 
 o2_add_executable(compare-tracks-worfklow
@@ -38,6 +41,7 @@ o2_add_executable(minv-workflow
                   COMPONENT_NAME mch
                   PUBLIC_LINK_LIBRARIES
                     O2::MCHEvaluation
+                    O2::MCHMappingImpl4
                   )
 
 o2_add_executable(kine-reader
@@ -55,3 +59,7 @@ o2_target_root_dictionary(MCHEvaluation
                             include/MCHEvaluation/Draw.h
                           LINKDEF src/MCHEvaluationLinkDef.h)
 
+
+o2_add_test_root_macro(src/acceff.C
+                       #PUBLIC_LINK_LIBRARIES O2::Field
+                       LABELS mch eval)
