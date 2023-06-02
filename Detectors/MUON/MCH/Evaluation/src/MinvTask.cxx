@@ -20,9 +20,10 @@
 #include "MCHEvaluation/ExtendedTrack.h"
 #include "MCHTracking/TrackExtrap.h"
 #include "MCHGeometryTransformer/Transformations.h"
-#include "MCHMappingInterface/CathodeSegmentation.h"
+//#include "MCHMappingInterface/CathodeSegmentation.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHGlobalMapping/DsIndex.h"
+#include "MCHGlobalMapping/ChannelCode.h"
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -203,8 +204,8 @@ void MinvTask::run(ProcessingContext& pc)
         // file << "================================="
         //  << "\n";
         // file << "Ch " << Ch_ID[clst] << "\n";
-        //file << clust[clst].getIdAsString() << "\n";
-        //file << clust[clst] << "\n";
+        // file << clust[clst].getIdAsString() << "\n";
+        // file << clust[clst] << "\n";
         De_ID = clust[clst].getDEId();
         Ch = clust[clst].getChamberId();
 
@@ -213,32 +214,44 @@ void MinvTask::run(ProcessingContext& pc)
         math_utils::Point3D<double> coord_loc(0., 0., 0.);
         T3D.MasterToLocal(coord_glob, coord_loc);
         auto& s = o2::mch::mapping::segmentation(clust[clst].getDEId());
+        //int numberofpadsperDE = s.nofPads();
         int PadIndexB = 0;
         int PadIndexNB = 0;
-        s.findPadPairByPosition(coord_loc.X(), coord_loc.Y(), PadIndexB, PadIndexNB);
-        int DualSampaIdB = s.padDualSampaId(PadIndexB);
+        bool test = s.findPadPairByPosition(coord_loc.X(), coord_loc.Y(), PadIndexB, PadIndexNB); //jusqu'ici ça va
+        //if (test == true){
+        file << "COORD X ET Y : " << coord_loc.X() << " & " << coord_loc.Y() << "\n";
+        file << "PAD INDEX B ET NB : " << PadIndexB << " & " << PadIndexNB << "\n";
+        //} else {continue;}
+        /*int DualSampaIdB = s.padDualSampaId(PadIndexB);
         int DualSampaIdNB = s.padDualSampaId(PadIndexNB);
-
-        file << "DS ID B : " << DualSampaIdB << " & DS ID NB : " << DualSampaIdNB << "\n";
         uint16_t DsIndexB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdB});
         uint16_t DsIndexNB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdNB});
-        file << "DS Index B : " << DsIndexB << " & DS Index NB : " << DsIndexNB << "\n";
+
+        ChannelCode c_B = ChannelCode(De_ID, PadIndexB);
+        ChannelCode c_NB = ChannelCode(De_ID, PadIndexNB);
+        uint16_t SolarIndexB = c_B.getSolarIndex();
+        uint16_t SolarIndexNB = c_NB.getSolarIndex();*/
+
+        // file << "SOLAR ID B : " << c_B.getSolarId() << "\n";
+        file << "DE ID : " << De_ID << "\n";
+        //file << "DS INDEX B : " << DsIndexB << " & DS INDEX NB : " << DsIndexNB << "\n";
+        //file << "SOLAR INDEX B : " << SolarIndexB << " & SOLAR INDEX NB : " << SolarIndexNB << "\n";
+        file << "---------------------------------------------" << "\n";
 
         // condition to remove a DE
-        if (clust[clst].getDEId() == 500 || clust[clst].getDEId() == 501 || clust[clst].getDEId() == 508 || clust[clst].getDEId() == 509 || clust[clst].getDEId() == 510 || clust[clst].getDEId() == 517 ||
-            clust[clst].getDEId() == 600 || clust[clst].getDEId() == 601 || clust[clst].getDEId() == 608 || clust[clst].getDEId() == 609 || clust[clst].getDEId() == 610 || clust[clst].getDEId() == 617) {
-          ClustperChamber[clust[clst].getChamberId()] += 0;
+        if (De_ID == 100) {
+          ClustperChamber[Ch] += 0;
         } else {
-          ClustperChamber[clust[clst].getChamberId()] += 1;
+          ClustperChamber[Ch] += 1;
           clst_survivors.emplace_back(clust[clst]);
           compt_clust2 += 1;
         }
 
         // condition to remove a chamber
-        /*if (clust[clst].getChamberId() == 9) {
-          ClustperChamber[clust[clst].getChamberId()] += 0;
+        /*if (Ch  == 9) {
+          ClustperChamber[Ch] += 0;
         } else {
-          ClustperChamber[clust[clst].getChamberId()] += 1;
+          ClustperChamber[Ch] += 1;
           clst_survivors.emplace_back(clust[clst]);
           compt_clust2 += 1;
         }*/
