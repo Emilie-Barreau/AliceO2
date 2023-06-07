@@ -21,6 +21,8 @@ class Histogrammer
 
   void fillDoubleParticleHistos(const ROOT::Math::PxPyPzMVector& lor1, const ROOT::Math::PxPyPzMVector& lor2); // filling histos 2D
 
+  void DEtest(const int& DE);
+
   void save(const char* filename);                                                                             // saving and writing in a root file
 
  private:

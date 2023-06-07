@@ -97,7 +97,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   auto legend1 = new TLegend(0.1, 0.9, 0.6, 0.8); // position x, position y, width x, width y
   legend1->SetHeader(Form("A.e difference : %.3f (percent)", (acceff_pt - acceff_pt_cut) * 100));
   legend1->AddEntry(hpt_reco, "Perfect detector");
-  legend1->AddEntry(hpt_reco_cut, "DE 500, 501, 508, 509, 510, 517 (idem 600...) removed");
+  legend1->AddEntry(hpt_reco_cut, "Solar 91-92, 203-204, 259-260, 283-284 removed");
   legend1->Draw();
 
   c->cd(2);
@@ -109,7 +109,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   auto legend2 = new TLegend(0.2, 0.9, 0.7, 0.8); // position x1, position y1, position x2, position y2 ?
   legend2->SetHeader(Form("A.e difference : %.3f (percent)", (acceff_y - acceff_y_cut) * 100));
   legend2->AddEntry(hy_reco, "Perfect detector");
-  legend2->AddEntry(hy_reco_cut, "DE 500, 501, 508, 509, 510, 517 (idem 600...) removed");
+  legend2->AddEntry(hy_reco_cut, "Solar 91-92, 203-204, 259-260, 283-284 removed");
   legend2->Draw();
 
   /*c->cd(3);

@@ -20,7 +20,6 @@
 #include "MCHEvaluation/ExtendedTrack.h"
 #include "MCHTracking/TrackExtrap.h"
 #include "MCHGeometryTransformer/Transformations.h"
-//#include "MCHMappingInterface/CathodeSegmentation.h"
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHGlobalMapping/DsIndex.h"
 #include "MCHGlobalMapping/ChannelCode.h"
@@ -214,32 +213,50 @@ void MinvTask::run(ProcessingContext& pc)
         math_utils::Point3D<double> coord_loc(0., 0., 0.);
         T3D.MasterToLocal(coord_glob, coord_loc);
         auto& s = o2::mch::mapping::segmentation(clust[clst].getDEId());
-        //int numberofpadsperDE = s.nofPads();
+        // int numberofpadsperDE = s.nofPads();
         int PadIndexB = 0;
         int PadIndexNB = 0;
-        bool test = s.findPadPairByPosition(coord_loc.X(), coord_loc.Y(), PadIndexB, PadIndexNB); //jusqu'ici ça va
-        //if (test == true){
-        file << "COORD X ET Y : " << coord_loc.X() << " & " << coord_loc.Y() << "\n";
-        file << "PAD INDEX B ET NB : " << PadIndexB << " & " << PadIndexNB << "\n";
-        //} else {continue;}
-        /*int DualSampaIdB = s.padDualSampaId(PadIndexB);
-        int DualSampaIdNB = s.padDualSampaId(PadIndexNB);
-        uint16_t DsIndexB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdB});
-        uint16_t DsIndexNB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdNB});
+        bool test = s.findPadPairByPosition(coord_loc.X(), coord_loc.Y(), PadIndexB, PadIndexNB); // jusqu'ici ça va
+        int compteur_DE = 0;
+        if (PadIndexB == -1 || PadIndexNB == -1 || (PadIndexB == -1 && PadIndexNB == -1)) {
+          mHistogrammer.DEtest(De_ID);
+          compteur_DE += 1;
+          file << "DE Id : " << De_ID << "\n";
+        }
+        ChannelCode c_B;
+        ChannelCode c_NB;
+        uint16_t SolarIndexB;
+        uint16_t SolarIndexNB;
+        if (test == true) {
+          int DualSampaIdB = s.padDualSampaId(PadIndexB);
+          int DualSampaIdNB = s.padDualSampaId(PadIndexNB);
+          uint16_t DsIndexB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdB});
+          uint16_t DsIndexNB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdNB});
 
-        ChannelCode c_B = ChannelCode(De_ID, PadIndexB);
-        ChannelCode c_NB = ChannelCode(De_ID, PadIndexNB);
-        uint16_t SolarIndexB = c_B.getSolarIndex();
-        uint16_t SolarIndexNB = c_NB.getSolarIndex();*/
+          c_B = ChannelCode(De_ID, PadIndexB);
+          c_NB = ChannelCode(De_ID, PadIndexNB);
+          SolarIndexB = c_B.getSolarIndex();
+          SolarIndexNB = c_NB.getSolarIndex();
+
+          file << "Chamber : " << Ch << "\n";
+          file << "DE : " << De_ID << "\n";
+          file << "SolarIndex INDEX B ET NB : " << SolarIndexB << " & " << SolarIndexNB << "\n";
+          file << "SolarIndex ID B ET NB : " << c_B.getSolarId() << " & " << c_NB.getSolarId() << "\n";
+
+          // file << "SOLAR INDEX B ET NB : " << SolarIndexB << " & " << SolarIndexNB << "\n";
+        } else {
+          continue;
+        }
 
         // file << "SOLAR ID B : " << c_B.getSolarId() << "\n";
-        file << "DE ID : " << De_ID << "\n";
-        //file << "DS INDEX B : " << DsIndexB << " & DS INDEX NB : " << DsIndexNB << "\n";
-        //file << "SOLAR INDEX B : " << SolarIndexB << " & SOLAR INDEX NB : " << SolarIndexNB << "\n";
-        file << "---------------------------------------------" << "\n";
+        // file << "DE ID : " << De_ID << "\n";
+        // file << "DS INDEX B : " << DsIndexB << " & DS INDEX NB : " << DsIndexNB << "\n";
+        // file << "SOLAR INDEX B : " << SolarIndexB << " & SOLAR INDEX NB : " << SolarIndexNB << "\n";
+        // file << "---------------------------------------------" << "\n";
 
-        // condition to remove a DE
-        if (De_ID == 100) {
+        // condition to remove a SOLAR
+        if (c_B.getSolarId() == 203 || c_B.getSolarId() == 204 || c_NB.getSolarId() == 91 || c_NB.getSolarId() == 92 ||
+            c_B.getSolarId() == 259 || c_B.getSolarId() == 260 || c_NB.getSolarId() == 283 || c_NB.getSolarId() == 284) {
           ClustperChamber[Ch] += 0;
         } else {
           ClustperChamber[Ch] += 1;
@@ -247,8 +264,17 @@ void MinvTask::run(ProcessingContext& pc)
           compt_clust2 += 1;
         }
 
-        // condition to remove a chamber
-        /*if (Ch  == 9) {
+        // condition to remove a DE
+        /*if (De_ID == 101 || De_ID == 201) {
+          ClustperChamber[Ch] += 0;
+        } else {
+          ClustperChamber[Ch] += 1;
+          clst_survivors.emplace_back(clust[clst]);
+          compt_clust2 += 1;
+        }*/
+
+        // condition to remove a Chamber
+        /*if (Ch == 9) {
           ClustperChamber[Ch] += 0;
         } else {
           ClustperChamber[Ch] += 1;
@@ -275,8 +301,11 @@ void MinvTask::run(ProcessingContext& pc)
     file << Form("%.2f PERCENT OF TRACKS ARE KEPT", rapport) << "\n";
     file << Form("WARNING : OVER %.f PERCENT OF TRACKS ARE LOST -> CRITICAL EFFICIENCY EXPECTED", limit)
          << "\n";
+    LOGP(warning, "KEPT TRACKS : {} %", rapport);
+    LOGP(warning, "LOSSES OF TRACK OVER {} %", limit);
   } else {
     file << Form("%.2f PERCENT OF TRACKS ARE KEPT", rapport) << "\n";
+    LOGP(warning, "KEPT TRACKS : {} %", rapport);
   }
 }
 } // namespace o2::mch::eval
