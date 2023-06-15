@@ -1,6 +1,7 @@
 #include "Histogrammer.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "MCHEvaluation/ExtendedTrack.h"
 #include <iostream>
 #include <fstream>
 #include <TFile.h>
@@ -9,17 +10,19 @@
 #include <iostream>
 #include <vector>
 
+class ExtendedTrack;
+
 Histogrammer::Histogrammer()
 {
   // initializing bins and limits for histograms
   double binEdges[]= {0., 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5,
-                            6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5, 10., 10.5,
-                            11., 12., 14., 16.}; //25
-  mHistos.emplace_back(new TH1F("pT", "Transverse Impulsion of dimuons", 48, 0., 16.)); //32 64
+                            6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5, 10., 12.,
+                            16.}; 
+  mHistos.emplace_back(new TH1F("pT", "Transverse Impulsion of dimuons", 22, binEdges)); 
   mHistos[0]->SetXTitle("p_{T} (GeV/c^{2})");
   mHistos[0]->SetYTitle("#");
 
-  mHistos.emplace_back(new TH1F("y", "Rapidity of dimuons", 60, -4.2, -2.3)); //15
+  mHistos.emplace_back(new TH1F("y", "Rapidity of dimuons", 60, -4.2, -2.3)); 
   mHistos[1]->SetXTitle("y");
   mHistos[1]->SetYTitle("#");
 
@@ -28,9 +31,13 @@ Histogrammer::Histogrammer()
   mHistos.emplace_back(new TH1F("pT Integral", "pT Integral", 32, 0., 16.));
   mHistos.emplace_back(new TH1F("y Integral", "y Integral", 15, -4., -2.5));
 
-  mHistos.emplace_back(new TH1F("DE", "Proportion of -1 in DE", 925, 100, 1025));
-  mHistos[6]->SetXTitle("Detection Element ID");
+  mHistos.emplace_back(new TH1F("Tr", "Clusters per Track", 9, 5, 18));
+  mHistos[6]->SetXTitle("Nb of clusters");
   mHistos[6]->SetYTitle("#");
+
+  mHistos.emplace_back(new TH1F("Clusters", "Proportion of clusters per DualSampa", 16819, 0, 16819));
+  mHistos[7]->SetXTitle("DualSampa Index");
+  mHistos[7]->SetYTitle("# of clusters");
 
   for (int i = 0; i < 32; i++){
     mMinv.emplace_back(new TH1F(Form("minv_%d",i), Form("minv_%d",i), 175, 2., 3.5));
@@ -43,6 +50,8 @@ Histogrammer::Histogrammer()
 
   mHistos2.emplace_back(new TH2F("Minv pT", "M_{inv} depending of p_{T}", 160, 0., 16., 175, 0., 3.5));
   mHistos2.emplace_back(new TH2F("Minv rap", "M_{inv} depending of rapidity", 100, -4.5, -2., 175, 0., 3.5));
+
+  mHistos2.emplace_back(new TH2F("pT pT_cut", "pT of initial track depending on pt of cut track", 100, -4.5, -2., 100, -4.5, -2.));
 }
 
 void Histogrammer::save(const char* filename)
@@ -65,10 +74,13 @@ void Histogrammer::save(const char* filename)
   myFile.WriteObject(mHistos[4], "pT Integral");
   myFile.WriteObject(mHistos[5], "y Integral");
 
-  myFile.WriteObject(mHistos[6], "DE");
+  myFile.WriteObject(mHistos[6], "CH");
+  myFile.WriteObject(mHistos[7], "DSclust");
 
   myFile.WriteObject(mHistos2[pt], "minv with pT");
   myFile.WriteObject(mHistos2[y], "minv with y");
+
+  myFile.WriteObject(mHistos2[2], "pt_pt");
 
   for (int i = 0; i < 32; i++){
     myFile.WriteObject(mMinv[i],Form("minv_%d",i));
@@ -89,6 +101,14 @@ void Histogrammer::fillSingleParticleHistos(const ROOT::Math::PxPyPzMVector& lor
 
 void Histogrammer::DEtest(const int& DE){
   mHistos[6]->Fill(DE);
+}
+
+void Histogrammer::DSclust(const int& DS_Index){
+  mHistos[7]->Fill(DS_Index);
+}
+
+void Histogrammer::fillTest(const o2::mch::eval::ExtendedTrack& E1, const o2::mch::eval::ExtendedTrack& E2){
+  mHistos2[2]->Fill(E2.P().Rapidity(), E1.P().Rapidity());
 }
 
 void Histogrammer::fillDoubleParticleHistos(const ROOT::Math::PxPyPzMVector& lor1, const ROOT::Math::PxPyPzMVector& lor2)
