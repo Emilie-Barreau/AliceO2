@@ -187,17 +187,16 @@ void MinvTask::run(ProcessingContext& pc)
   std::array<int, 10> ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ClusterperChamber
 
   for (auto i = 0; i < rofs.size(); i++) {
-    // auto sppan = clusters.subspan(0, 621500);
     auto etracks = getExtendedTracks(rofs[i], tracks, clusters);
     std::vector<o2::mch::eval::ExtendedTrack> etrackables;
-    // std::vector<o2::mch::eval::ExtendedTrack> etracksbis;
     for (auto ext = 0; ext < etracks.size(); ext++) {
       compt_t1 += 1;
       auto etrack = etracks[ext];
       clust = etrack.getClusters();
+      mHistogrammer.DEtest(clust.size());
+      file << "TEST : " << clust.size() << "\n";
       ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
       std::vector<Cluster> clst_survivors;
-      // clust_rof.insert(clust_rof.end(), clust.begin(), clust.end());
       for (auto clst = 0; clst < clust.size(); clst++) {
         compt_clust1 += 1;
         // file << "================================="
@@ -207,7 +206,6 @@ void MinvTask::run(ProcessingContext& pc)
         // file << clust[clst] << "\n";
         De_ID = clust[clst].getDEId();
         Ch = clust[clst].getChamberId();
-
         auto T3D = transformcreat(clust[clst].getDEId());
         math_utils::Point3D<double> coord_glob(clust[clst].getX(), clust[clst].getY(), clust[clst].getZ());
         math_utils::Point3D<double> coord_loc(0., 0., 0.);
@@ -219,35 +217,26 @@ void MinvTask::run(ProcessingContext& pc)
         bool test = s.findPadPairByPosition(coord_loc.X(), coord_loc.Y(), PadIndexB, PadIndexNB); // jusqu'ici ça va
         int compteur_DE = 0;
         if (PadIndexB == -1 || PadIndexNB == -1 || (PadIndexB == -1 && PadIndexNB == -1)) {
-          mHistogrammer.DEtest(De_ID);
           compteur_DE += 1;
-          file << "DE Id : " << De_ID << "\n";
         }
         ChannelCode c_B;
         ChannelCode c_NB;
         uint16_t SolarIndexB;
         uint16_t SolarIndexNB;
+        uint16_t DsIndexB;
+        uint16_t DsIndexNB;
         if (test == true) {
           int DualSampaIdB = s.padDualSampaId(PadIndexB);
           int DualSampaIdNB = s.padDualSampaId(PadIndexNB);
-          uint16_t DsIndexB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdB});
-          uint16_t DsIndexNB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdNB});
-
+          DsIndexB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdB});
+          DsIndexNB = o2::mch::getDsIndex({clust[clst].getDEId(), DualSampaIdNB});
           c_B = ChannelCode(De_ID, PadIndexB);
           c_NB = ChannelCode(De_ID, PadIndexNB);
           SolarIndexB = c_B.getSolarIndex();
           SolarIndexNB = c_NB.getSolarIndex();
-
-          file << "Chamber : " << Ch << "\n";
-          file << "DE : " << De_ID << "\n";
-          file << "SolarIndex INDEX B ET NB : " << SolarIndexB << " & " << SolarIndexNB << "\n";
-          file << "SolarIndex ID B ET NB : " << c_B.getSolarId() << " & " << c_NB.getSolarId() << "\n";
-
-          // file << "SOLAR INDEX B ET NB : " << SolarIndexB << " & " << SolarIndexNB << "\n";
         } else {
           continue;
         }
-
         // file << "SOLAR ID B : " << c_B.getSolarId() << "\n";
         // file << "DE ID : " << De_ID << "\n";
         // file << "DS INDEX B : " << DsIndexB << " & DS INDEX NB : " << DsIndexNB << "\n";
@@ -255,17 +244,19 @@ void MinvTask::run(ProcessingContext& pc)
         // file << "---------------------------------------------" << "\n";
 
         // condition to remove a SOLAR
-        if (c_B.getSolarId() == 203 || c_B.getSolarId() == 204 || c_NB.getSolarId() == 91 || c_NB.getSolarId() == 92 ||
-            c_B.getSolarId() == 259 || c_B.getSolarId() == 260 || c_NB.getSolarId() == 283 || c_NB.getSolarId() == 284) {
+        /*if (DsIndexB == 0) {
           ClustperChamber[Ch] += 0;
         } else {
           ClustperChamber[Ch] += 1;
           clst_survivors.emplace_back(clust[clst]);
           compt_clust2 += 1;
-        }
+        }*/
+
+        mHistogrammer.DSclust(DsIndexB);
+        // mHistogrammer.DEtest(clust[clst].getChamberId());
 
         // condition to remove a DE
-        /*if (De_ID == 101 || De_ID == 201) {
+        /*if (De_ID == 0) {
           ClustperChamber[Ch] += 0;
         } else {
           ClustperChamber[Ch] += 1;
@@ -274,21 +265,22 @@ void MinvTask::run(ProcessingContext& pc)
         }*/
 
         // condition to remove a Chamber
-        /*if (Ch == 9) {
+        if (Ch == 4) {
           ClustperChamber[Ch] += 0;
         } else {
           ClustperChamber[Ch] += 1;
           clst_survivors.emplace_back(clust[clst]);
           compt_clust2 += 1;
-        }*/
+        }
       }
       auto etrackbis = ExtendedTrack(clst_survivors, 0., 0., 0.);
       bool trackable = o2::mch::isTrackable(ClustperChamber, {true, true, true, true, true}, false);
       if (trackable == true) {
-        // etrackables.emplace_back(etrack); //methode 1
-        etrackables.emplace_back(etrackbis);
+        // etrackables.emplace_back(etrack); // methode 1
+        etrackables.emplace_back(etrackbis); // methode 2
         compt_t2 += 1;
       }
+      mHistogrammer.fillTest(etrack, etrackbis); //test diagonale
     }
     dump(etrackables);
     fillHistos(etrackables);
@@ -296,11 +288,12 @@ void MinvTask::run(ProcessingContext& pc)
   file << compt_t2 << " are trackables on " << compt_t1 << "\n";
   file << compt_clust2 << " clusters have survived over " << compt_clust1 << "\n";
   auto rapport = compt_t2 * 100 / compt_t1;
-  double limit = 20.;
-  if (100 - (compt_t2 * 100 / compt_t1) > limit) {
+  double limit = 10.;
+  if (100 - rapport > limit) {
     file << Form("%.2f PERCENT OF TRACKS ARE KEPT", rapport) << "\n";
     file << Form("WARNING : OVER %.f PERCENT OF TRACKS ARE LOST -> CRITICAL EFFICIENCY EXPECTED", limit)
          << "\n";
+    file << "compt 2 : " << compt_t2 << "\n";
     LOGP(warning, "KEPT TRACKS : {} %", rapport);
     LOGP(warning, "LOSSES OF TRACK OVER {} %", limit);
   } else {
