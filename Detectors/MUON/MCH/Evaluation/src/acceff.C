@@ -10,7 +10,7 @@
 // Compares and gives the acceptence/efficiency
 
 void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_gen.root",
-            const char* freco = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_reco.root",
+            const char* freco = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_reco_nocut.root",
             const char* freco_cut = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_reco_cut.root")
 {
   /*TFile f1(fgen);
@@ -24,7 +24,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
 
   TCanvas* c = new TCanvas();
   c->Divide(2, 1);
-  c->SetWindowSize(1500, 700);
+  c->SetWindowSize(2000, 700);
 
   // For pT
   TH1* hpt_gen = static_cast<TH1*>(f_gen->Get("pT"));
@@ -88,9 +88,9 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   double acceff_testy = htesty_reco->GetEntries() / htesty_gen->GetEntries();
   htesty_reco->Divide(htesty_gen);*/
 
-  /*c->cd(1);
-  hpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
-  hpt_reco->SetYTitle("A.e");
+  c->cd(1);
+  hpt_reco->SetXTitle("p_{T} (GeV/c)");
+  hpt_reco->SetYTitle("A.#epsilon");
   hpt_reco->Draw("HIST E");
   hpt_reco_cut->Draw("SAME HIST E");
   hpt_reco_cut->SetLineColor(2);
@@ -99,14 +99,14 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   hpt_reco->GetYaxis()->SetLabelSize(0.04);
   hpt_reco->GetYaxis()->SetTitleSize(0.04);
   auto legend1 = new TLegend(0.1, 0.9, 0.6, 0.8); // position x, position y, width x, width y
-  legend1->SetHeader(Form("A.e difference : %.3f (percent)", (acceff_pt - acceff_pt_cut) * 100));
+  legend1->SetHeader(Form("A.#epsilon difference : %.3f (percent)", (acceff_pt - acceff_pt_cut) * 100));
   legend1->AddEntry(hpt_reco, "Perfect detector");
-  legend1->AddEntry(hpt_reco_cut, "Ch 1, 3, 7 removed");
+  legend1->AddEntry(hpt_reco_cut, "Ends DE x 12 Ch 5, 6 removed");
   legend1->Draw();
 
   c->cd(2);
   hy_reco->SetXTitle("y");
-  hy_reco->SetYTitle("A.e");
+  hy_reco->SetYTitle("A.#epsilon");
   hy_reco->Draw("HIST E");
   hy_reco_cut->Draw("SAME HIST E");
   hy_reco_cut->SetLineColor(2);
@@ -115,10 +115,10 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   hy_reco->GetYaxis()->SetLabelSize(0.04);
   hy_reco->GetYaxis()->SetTitleSize(0.04);
   auto legend2 = new TLegend(0.2, 0.9, 0.7, 0.8); // position x1, position y1, position x2, position y2 ?
-  legend2->SetHeader(Form("A.e difference : %.3f (percent)", (acceff_y - acceff_y_cut) * 100));
+  legend2->SetHeader(Form("A.#epsilon difference : %.3f (percent)", (acceff_y - acceff_y_cut) * 100));
   legend2->AddEntry(hy_reco, "Perfect detector");
-  legend2->AddEntry(hy_reco_cut, "Ch 1, 3, 7 removed");
-  legend2->Draw();*/
+  legend2->AddEntry(hy_reco_cut, "Ends DE x 12 Ch 5, 6 removed");
+  legend2->Draw();
 
   double Ae_ratio_y = (acceff_y_cut / acceff_y) * 100;
   double Ae_ratio_pt = (acceff_pt_cut / acceff_pt) * 100;
@@ -132,7 +132,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   }
 
   c->cd(1);
-  hpt_reco_cut->SetXTitle("p_{T} (GeV/c^{2})");
+  hpt_reco_cut->SetXTitle("p_{T} (GeV/c)");
   hpt_reco_cut->SetYTitle("A.#epsilon ratio");
   hpt_reco_cut->SetAxisRange(0., 2., "Y");
   hpt_reco_cut->GetXaxis()->SetLabelSize(0.04);
@@ -141,10 +141,10 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   hpt_reco_cut->GetYaxis()->SetTitleSize(0.04);
   hpt_reco_cut->Divide(hpt_reco);
   hpt_reco_cut->Draw("HIST E");
-  auto legend3 = new TLegend(0.1, 0.9, 0.6, 0.8);
-  //hpt_reco_cut->SetStats(0); \
-  legend3->SetHeader(Form("A.e ratio : %.3f (percent)", Ae_ratio_pt));
-  legend3->AddEntry(hpt_reco_cut, "Ratio Ch 5 removed");
+  auto legend3 = new TLegend(0.1, 0.9, 0.7, 0.8);
+  //hpt_reco_cut->SetStats(0); 
+  legend3->SetHeader(Form("A.#epsilon ratio : %.3f (percent)", Ae_ratio_pt));
+  legend3->AddEntry(hpt_reco_cut, "Ratio Solar up DE 511, 516, 611, 616 removed");
   legend3->Draw();
 
   c->cd(2);
@@ -157,13 +157,13 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   hy_reco_cut->GetYaxis()->SetTitleSize(0.04);
   hy_reco_cut->Divide(hy_reco);
   hy_reco_cut->Draw("HIST E");
-  auto legend4 = new TLegend(0.1, 0.9, 0.6, 0.8);
-  legend4->SetHeader(Form("A.e ratio : %.3f (percent)", Ae_ratio_y));
-  legend4->AddEntry(hy_reco_cut, "Ratio Ch 5 removed");
+  auto legend4 = new TLegend(0.1, 0.9, 0.7, 0.8);
+  legend4->SetHeader(Form("A.#epsilon ratio : %.3f (percent)", Ae_ratio_y));
+  legend4->AddEntry(hy_reco_cut, "Ratio Solar up DE 511, 516, 611, 616 removed");
   legend4->Draw();
 
   /*c->cd(3);
-  htestpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
+  htestpt_reco->SetXTitle("p_{T} (GeV/c)");
   htestpt_reco->SetYTitle("A.e");
   htestpt_reco->Draw("HIST E");*/
 
@@ -173,12 +173,12 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   htesty_reco->Draw("HIST E");*/
 
   /*c->cd(6);
-  hmpt_reco->SetXTitle("p_{T} (GeV/c^{2})");
+  hmpt_reco->SetXTitle("p_{T} (GeV/c)");
   hmpt_reco->SetYTitle("invariant mass (GeV/c)");
   hmpt_reco->Draw("COLZ");*/
 
   /*c->cd(7);
   hmy_reco->SetXTitle("y");
-  hmy_reco->SetYTitle("invariant mass (GeV/c)");
+  hmy_reco->SetYTitle("invariant mass (GeV/c^{2})");
   hmy_reco->Draw("COLZ");*/
 }

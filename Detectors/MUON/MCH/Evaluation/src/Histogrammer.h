@@ -28,6 +28,7 @@ class Histogrammer
   void DEtest(const int& DE);
 
   void DSclust(const int& DS_Index);
+  void DSclustbis(const int& DS_Index);
 
   void save(const char* filename);                                                                             // saving and writing in a root file
 
