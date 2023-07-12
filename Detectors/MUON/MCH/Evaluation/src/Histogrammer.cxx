@@ -19,7 +19,7 @@ Histogrammer::Histogrammer()
                             6., 6.5, 7., 7.5, 8., 8.5, 9., 9.5, 10., 12.,
                             16.}; 
   mHistos.emplace_back(new TH1F("pT", "Transverse Impulsion of dimuons", 22, binEdges)); 
-  mHistos[0]->SetXTitle("p_{T} (GeV/c^{2})");
+  mHistos[0]->SetXTitle("p_{T} (GeV/c)");
   mHistos[0]->SetYTitle("#");
 
   mHistos.emplace_back(new TH1F("y", "Rapidity of dimuons", 60, -4.2, -2.3)); 
@@ -31,13 +31,17 @@ Histogrammer::Histogrammer()
   mHistos.emplace_back(new TH1F("pT Integral", "pT Integral", 32, 0., 16.));
   mHistos.emplace_back(new TH1F("y Integral", "y Integral", 15, -4., -2.5));
 
-  mHistos.emplace_back(new TH1F("Tr", "Clusters per Track", 9, 5, 18));
+  mHistos.emplace_back(new TH1F("Tr", "Clusters per DE", 1025, 0, 1025));
   mHistos[6]->SetXTitle("Nb of clusters");
   mHistos[6]->SetYTitle("#");
 
-  mHistos.emplace_back(new TH1F("Clusters", "Proportion of clusters per DualSampa", 16819, 0, 16819));
-  mHistos[7]->SetXTitle("DualSampa Index");
+  mHistos.emplace_back(new TH1F("Clusters", "Proportion of clusters per DualSampa B", 16819, 0, 16819));
+  mHistos[7]->SetXTitle("DualSampa B Index");
   mHistos[7]->SetYTitle("# of clusters");
+
+  mHistos.emplace_back(new TH1F("Clusters", "Proportion of clusters per DualSampa NB", 16819, 0, 16819));
+  mHistos[8]->SetXTitle("DualSampa NB Index");
+  mHistos[8]->SetYTitle("# of clusters");
 
   for (int i = 0; i < 32; i++){
     mMinv.emplace_back(new TH1F(Form("minv_%d",i), Form("minv_%d",i), 175, 2., 3.5));
@@ -75,7 +79,8 @@ void Histogrammer::save(const char* filename)
   myFile.WriteObject(mHistos[5], "y Integral");
 
   myFile.WriteObject(mHistos[6], "CH");
-  myFile.WriteObject(mHistos[7], "DSclust");
+  myFile.WriteObject(mHistos[7], "DSclustB");
+  myFile.WriteObject(mHistos[8], "DSclustNB");
 
   myFile.WriteObject(mHistos2[pt], "minv with pT");
   myFile.WriteObject(mHistos2[y], "minv with y");
@@ -105,6 +110,10 @@ void Histogrammer::DEtest(const int& DE){
 
 void Histogrammer::DSclust(const int& DS_Index){
   mHistos[7]->Fill(DS_Index);
+}
+
+void Histogrammer::DSclustbis(const int& DS_Index){
+  mHistos[8]->Fill(DS_Index);
 }
 
 void Histogrammer::fillTest(const o2::mch::eval::ExtendedTrack& E1, const o2::mch::eval::ExtendedTrack& E2){

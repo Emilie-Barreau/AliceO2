@@ -70,7 +70,7 @@ void MinvTask::init(InitContext& ic)
       h2->Write();
     }
     mOutputRootFile->Close();
-    // mHistogrammer.save("Histos_reco.root");
+    //mHistogrammer.save("Histos_reco.root");
     mHistogrammer.save("Histos_reco_cut.root");
   };
 
@@ -214,7 +214,7 @@ void MinvTask::run(ProcessingContext& pc)
         // int numberofpadsperDE = s.nofPads();
         int PadIndexB = 0;
         int PadIndexNB = 0;
-        bool test = s.findPadPairByPosition(coord_loc.X(), coord_loc.Y(), PadIndexB, PadIndexNB); // jusqu'ici ça va
+        bool test = s.findPadPairByPosition(coord_loc.X(), coord_loc.Y(), PadIndexB, PadIndexNB); 
         int compteur_DE = 0;
         if (PadIndexB == -1 || PadIndexNB == -1 || (PadIndexB == -1 && PadIndexNB == -1)) {
           compteur_DE += 1;
@@ -244,50 +244,59 @@ void MinvTask::run(ProcessingContext& pc)
         // file << "---------------------------------------------" << "\n";
 
         // condition to remove a SOLAR
-        /*if (DsIndexB == 0) {
+        /*if (c_B.getSolarId() == 442 || c_B.getSolarId() == 402 || c_B.getSolarId() == 36 || c_B.getSolarId() == 436 ||
+            c_NB.getSolarId() == 443 || c_NB.getSolarId() == 403 || c_NB.getSolarId() == 37 || c_NB.getSolarId() == 437) {
           ClustperChamber[Ch] += 0;
         } else {
           ClustperChamber[Ch] += 1;
           clst_survivors.emplace_back(clust[clst]);
           compt_clust2 += 1;
+          mHistogrammer.DSclust(DsIndexB);
+          mHistogrammer.DSclustbis(DsIndexNB);
         }*/
 
-        mHistogrammer.DSclust(DsIndexB);
-        // mHistogrammer.DEtest(clust[clst].getChamberId());
+        //mHistogrammer.DSclust(DsIndexB);
+        //mHistogrammer.DSclustbis(DsIndexNB);
+        //mHistogrammer.DEtest(De_ID);
 
         // condition to remove a DE
-        /*if (De_ID == 0) {
+        if (De_ID == 720 || De_ID == 820 || De_ID == 920 || De_ID == 1020) {
           ClustperChamber[Ch] += 0;
         } else {
           ClustperChamber[Ch] += 1;
           clst_survivors.emplace_back(clust[clst]);
           compt_clust2 += 1;
-        }*/
+          mHistogrammer.DSclust(DsIndexB);
+          mHistogrammer.DSclustbis(DsIndexNB);
+          mHistogrammer.DEtest(De_ID);
+        }
 
         // condition to remove a Chamber
-        if (Ch == 4) {
+        /*if (Ch == 0 || Ch == 2 || Ch == 4 || Ch == 6) {
           ClustperChamber[Ch] += 0;
         } else {
           ClustperChamber[Ch] += 1;
           clst_survivors.emplace_back(clust[clst]);
           compt_clust2 += 1;
-        }
+          mHistogrammer.DSclust(DsIndexB);
+          mHistogrammer.DSclustbis(DsIndexNB);
+        }*/
       }
       auto etrackbis = ExtendedTrack(clst_survivors, 0., 0., 0.);
       bool trackable = o2::mch::isTrackable(ClustperChamber, {true, true, true, true, true}, false);
       if (trackable == true) {
-        // etrackables.emplace_back(etrack); // methode 1
+       //etrackables.emplace_back(etrack); // methode 1
         etrackables.emplace_back(etrackbis); // methode 2
         compt_t2 += 1;
       }
-      mHistogrammer.fillTest(etrack, etrackbis); //test diagonale
+      mHistogrammer.fillTest(etrack, etrackbis); //test
     }
     dump(etrackables);
     fillHistos(etrackables);
   }
-  file << compt_t2 << " are trackables on " << compt_t1 << "\n";
-  file << compt_clust2 << " clusters have survived over " << compt_clust1 << "\n";
-  auto rapport = compt_t2 * 100 / compt_t1;
+  file << compt_t2 << " are trackables on " << 59196 << "\n";
+  //file << compt_clust2 << " clusters have survived over " << compt_clust1 << "\n";
+  auto rapport = compt_t2 * 100 / 59196.;
   double limit = 10.;
   if (100 - rapport > limit) {
     file << Form("%.2f PERCENT OF TRACKS ARE KEPT", rapport) << "\n";
@@ -300,5 +309,6 @@ void MinvTask::run(ProcessingContext& pc)
     file << Form("%.2f PERCENT OF TRACKS ARE KEPT", rapport) << "\n";
     LOGP(warning, "KEPT TRACKS : {} %", rapport);
   }
+  file.close();
 }
 } // namespace o2::mch::eval
