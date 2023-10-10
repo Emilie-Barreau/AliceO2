@@ -53,7 +53,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   TH1* hy_reco_cut = static_cast<TH1*>(f_reco_cut->Get("y"));
   hy_reco_cut->Sumw2();
   double acceff_y_cut = hy_reco_cut->GetEntries() / hy_gen->GetEntries();
-  std::cout << "acceff y : " << acceff_y_cut * 100 << " \%" << std::endl;
+  std::cout << "acceff y cut : " << acceff_y_cut * 100 << " \%" << std::endl;
   hy_reco_cut->Divide(hy_gen);
 
   // For Invariant mass
