@@ -29,5 +29,6 @@ HOW TO USE IT :
 - In the acceff.C code, check the name of your fgen, freco and freco_cut (should be the name of your root files from previous codes)
 - In root environment : .x $HOME/alice/O2/Detectors/MUON/MCH/Evaluation/src/acceff.C
 - Change the histogram parameters if needed and root again
+**BE CAREFUL ABOUT THE PACKAGES AND O2 VERSION !!!**
 
 ============================================================================
