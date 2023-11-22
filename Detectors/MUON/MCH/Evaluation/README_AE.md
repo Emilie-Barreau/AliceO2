@@ -1,6 +1,4 @@
-============================================================================
----------------------------------- README ----------------------------------
-============================================================================
+# Acceptance-efficiency MCH tracks quick estimation
 
 Goal : From MC simulation, this code can estimate the acceptance-efficiency of the MCH part of the Spectrometer, considering the chambers breakdowns for different levels
 
@@ -20,15 +18,15 @@ TIPS : Keep a clean .root file for the reconstructed muons (without breakdowns) 
 
 ============================================================================
 HOW TO USE IT :
-- Import the root files from your simulation in a repository in /Users/yourlogin/alice/
-- Do the modifications you need
+- Import the root files from your simulation in a repository in $HOME/alice/
+- Make the modifications you need
 - Compile the code (aliBuild or ninja)
 - Run the code **inside your simulation repository**
-  KineReader code : /Users/yourlogin/alice/sw/BUILD/O2-latest/O2/stage/bin/o2-mch-kine-reader
-  MinvTask code : o2-mch-tracks-reader-workflow | o2-mch-minv-workflow -b
+  KineReader code : `$HOME/alice/sw/BUILD/O2-latest/O2/stage/bin/o2-mch-kine-reader`
+  MinvTask code : `o2-mch-tracks-reader-workflow | o2-mch-minv-workflow -b`
 - In the acceff.C code, check the name of your fgen, freco and freco_cut (should be the name of your root files from previous codes)
-- In root environment : .x $HOME/alice/O2/Detectors/MUON/MCH/Evaluation/src/acceff.C
+- In root environment : `.x $HOME/alice/O2/Detectors/MUON/MCH/Evaluation/src/acceff.C`
 - Change the histogram parameters if needed and root again
-**BE CAREFUL ABOUT THE PACKAGES AND O2 VERSION !!!**
+**BE CAREFUL ABOUT PACKAGES AND O2 VERSION !!!**
 
 ============================================================================

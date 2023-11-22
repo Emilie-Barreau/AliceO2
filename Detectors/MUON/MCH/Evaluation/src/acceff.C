@@ -5,18 +5,15 @@
 #include <iostream>
 #include <TLegend.h>
 
-// Macro with previous histograms
+// Macro with previous histograms from KineReader & MinvTask
 //
-// Compares and gives the acceptence/efficiency
+// Compares and gives the acceptance/efficiency
 
+//Calling the .root
 void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_gen.root",
             const char* freco = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_reco_nocut.root",
             const char* freco_cut = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_reco_cut.root")
 {
-  /*TFile f1(fgen);
-  TFile f2(freco);
-  f1.ls();
-  f2.ls();*/
 
   TFile* f_gen = TFile::Open(fgen);
   TFile* f_reco = TFile::Open(freco);
@@ -73,7 +70,7 @@ void acceff(const char* fgen = "/Users/emiliebarreau/alice/TEST_50000evt/Histos_
   TH2* hmy_reco = static_cast<TH2*>(f_reco->Get("minv with y"));
   hmy_reco->Divide(hmy_gen);
 
-  // TEST INTEGRALE
+  //Same with integrale method for Minv
   TH2* htestpt_gen = static_cast<TH2*>(f_gen->Get("pT Integral"));
   TH2* htestpt_reco = static_cast<TH2*>(f_reco->Get("pT Integral"));
   htestpt_gen->Sumw2();

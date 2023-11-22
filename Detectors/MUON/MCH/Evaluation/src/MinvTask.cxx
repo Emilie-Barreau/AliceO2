@@ -243,6 +243,9 @@ void MinvTask::run(ProcessingContext& pc)
         // file << "SOLAR INDEX B : " << SolarIndexB << " & SOLAR INDEX NB : " << SolarIndexNB << "\n";
         // file << "---------------------------------------------" << "\n";
 
+        // code for removing part of the detectors are organized by levels (DE, Solar...)
+        // work level by level, not all at once 
+
         // condition to remove a SOLAR
         /*if (c_B.getSolarId() == 442 || c_B.getSolarId() == 402 || c_B.getSolarId() == 36 || c_B.getSolarId() == 436 ||
             c_NB.getSolarId() == 443 || c_NB.getSolarId() == 403 || c_NB.getSolarId() == 37 || c_NB.getSolarId() == 437) {
@@ -285,18 +288,18 @@ void MinvTask::run(ProcessingContext& pc)
       auto etrackbis = ExtendedTrack(clst_survivors, 0., 0., 0.);
       bool trackable = o2::mch::isTrackable(ClustperChamber, {true, true, true, true, true}, false);
       if (trackable == true) {
-       //etrackables.emplace_back(etrack); // methode 1
-        etrackables.emplace_back(etrackbis); // methode 2
+       //etrackables.emplace_back(etrack); // methode 1 = keeping the old tracks, just removing some clusters
+        etrackables.emplace_back(etrackbis); // methode 2 = building new tracks, regarding the rest of clusters
         compt_t2 += 1;
       }
-      mHistogrammer.fillTest(etrack, etrackbis); //test
+      mHistogrammer.fillTest(etrack, etrackbis); 
     }
     dump(etrackables);
     fillHistos(etrackables);
   }
-  file << compt_t2 << " are trackables on " << 59196 << "\n";
-  //file << compt_clust2 << " clusters have survived over " << compt_clust1 << "\n";
-  auto rapport = compt_t2 * 100 / 59196.;
+  //file << compt_t2 << " are trackables on " << 59196 << "\n";
+  file << compt_clust2 << " clusters have survived over " << compt_clust1 << "\n";
+  auto rapport = compt_t2 * 100 / compt_clust1;
   double limit = 10.;
   if (100 - rapport > limit) {
     file << Form("%.2f PERCENT OF TRACKS ARE KEPT", rapport) << "\n";
