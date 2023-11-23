@@ -17,7 +17,9 @@ Macro file :
 TIPS : Keep a clean .root file for the reconstructed muons (without breakdowns) then create news .root files for each modification and specify in the file name (ex : Histo_reco_cut_DE3.root)
 
 **FOR THE COMMAND : check your paths, some files/executables might be in different locations**
+
 ============================================================================
+
 HOW TO USE IT :
 - Import the root files from your simulation in a repository in $HOME/alice/ (see below for full simulation tutorial)
 - Make the modifications you need
@@ -31,6 +33,7 @@ HOW TO USE IT :
 **BE CAREFUL ABOUT PACKAGES AND O2 VERSION !!!**
 
 ============================================================================
+ 
 SIMULATION WITH LXPLUS :
 - Go to lxplus : `ssh -X youlogin@lxplus.cern.ch`
 - Source the environment : `source /cvmfs/alice-nightlies.cern.ch/bin/alienv enter VO_ALICE@O2sim::v20230413-1`
