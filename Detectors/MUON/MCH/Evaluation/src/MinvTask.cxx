@@ -181,7 +181,7 @@ void MinvTask::run(ProcessingContext& pc)
   double compt_clust1 = 0.;
   double compt_clust2 = 0.;
 
-  std::ifstream jsn("/Users/emiliebarreau/alice/TEST_50000evt/geom.json");
+  std::ifstream jsn("$HOME/alice/yoursimulationdirectory/geom.json");
   auto transformcreat = o2::mch::geo::transformationFromJSON(jsn);
 
   std::array<int, 10> ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ClusterperChamber
