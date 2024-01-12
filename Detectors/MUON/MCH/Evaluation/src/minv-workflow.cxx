@@ -63,7 +63,8 @@ WorkflowSpec defineDataProcessing(ConfigContext const& configcontext)
     Outputs{},
     AlgorithmSpec{adaptFromTask<eval::MinvTask>(ccdbRequest)},
     Options{
-      {"outfile", VariantType::String, "minv.root", {"output Root filename"}}
+      {"outfile", VariantType::String, "minv.root", {"output Root filename"}},
+      {"geomfile", VariantType::String, "geom.json", {"geometry json filename"}}
     }});
       
 

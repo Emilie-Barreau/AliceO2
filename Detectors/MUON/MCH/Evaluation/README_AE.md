@@ -26,8 +26,7 @@ HOW TO USE IT :
 - Compile the code (aliBuild or ninja)
 - Run the code **inside your simulation directory**
   - KineReader code : `$HOME/alice/sw/BUILD/O2-latest/O2/stage/bin/o2-mch-kine-reader`
-  - MinvTask code : `o2-mch-tracks-reader-workflow | o2-mch-minv-workflow -b`
-    **For MinvTask, LINE 184** : you have to put the path of your geom.json file, created during the simulation
+  - MinvTask code : `o2-mch-tracks-reader-workflow | o2-mch-minv-workflow --geomfile yourpathtoyourgeom.jsonfile/geom.json -b` your geom.json file is created during the simulation process, you can get it from the --geomfile option 
 - In the acceff.C code, check the name of your fgen, freco and freco_cut (should be the name of your root files from previous codes)
 - In root environment : `.x $HOME/alice/O2/Detectors/MUON/MCH/Evaluation/src/acceff.C`
 - Change the histogram parameters if needed and root again
@@ -42,7 +41,7 @@ SIMULATION WITH LXPLUS :
   if it doesn't work, try `alienv enter VO_ALICE@O2sim::v20230413-1`
 - Create a new directory for your simulation
 - Check for the generator file : `O2DPG_ROOT/MC/config/PWGDQ/external/generator/GeneratorParamPromptJpsiToMuonEvtGen_pp13TeV.C` **choose the right one**
-- Run the command inside the simulation repository : `o2-sim --timestamp 1669594219618 -j 4 -n 5000 -g external -m HALL MAG DIPO COMP PIPE ABSO SHIL MCH MID -o sgn  --configKeyValues "GeneratorExternal.fileName=$O2DPG_ROOT/MC/config/PWGDQ/external/generator/GeneratorParamPromptJpsiToMuonEvtGen_pp13TeV.C;GeneratorExternal.funcName=GeneratorParamPromptJpsiToMuonEvtGen_pp13TeV()"` (change the parameters if needed)
+- Run the command inside the simulation directory : `o2-sim --timestamp 1669594219618 -j 4 -n 5000 -g external -m HALL MAG DIPO COMP PIPE ABSO SHIL MCH MID -o sgn  --configKeyValues "GeneratorExternal.fileName=$O2DPG_ROOT/MC/config/PWGDQ/external/generator/GeneratorParamPromptJpsiToMuonEvtGen_pp13TeV.C;GeneratorExternal.funcName=GeneratorParamPromptJpsiToMuonEvtGen_pp13TeV()"` (change the parameters if needed)
 **Active your token for the CCDB access**
 - Digitalization step : `o2-sim-digitizer-workflow -b --sims=sgn`
 - Reconstruction step : `o2-mch-reco-workflow -b`

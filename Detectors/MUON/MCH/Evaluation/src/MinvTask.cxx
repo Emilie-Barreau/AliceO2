@@ -57,6 +57,7 @@ ROOT::Math::PxPyPzMVector getLorentzVector(o2::mch::eval::ExtendedTrack t)
 void MinvTask::init(InitContext& ic)
 {
   auto outputFileName = ic.options().get<std::string>("outfile");
+  geomFileName = ic.options().get<std::string>("geomfile");
   o2::base::GRPGeomHelper::instance().setRequest(mCcdbRequest);
 
   mOutputRootFile = std::make_unique<TFile>(outputFileName.c_str(), "RECREATE");
@@ -70,8 +71,8 @@ void MinvTask::init(InitContext& ic)
       h2->Write();
     }
     mOutputRootFile->Close();
-    //mHistogrammer.save("Histos_reco.root");
-    mHistogrammer.save("Histos_reco_cut.root");
+    //mHistogrammer.save("Histos_reco.root"); // name to save the output without cut (as reference)
+    mHistogrammer.save("Histos_reco_cut.root"); // name to save the output with cut (name should be coherent with the type of cut)
   };
 
   ic.services().get<CallbackService>().set<CallbackService::Id::Stop>(stop);
@@ -96,7 +97,6 @@ void MinvTask::fillHistos(gsl::span<const ExtendedTrack> tracks)
       auto lv2 = getLorentzVector(t2);
       auto lv12 = lv1 + lv2;
       if (tracks[trk1].P().Eta() > -4. && tracks[trk1].P().Eta() < -2.5 && tracks[trk2].P().Eta() > -4. && tracks[trk2].P().Eta() < -2.5) {
-        // mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
         if (lv12.Rapidity() > -4 && lv12.Rapidity() < -2.5) {
           mHistogrammer.fillSingleParticleHistos(lv12);
           mHistogrammer.fillDoubleParticleHistos(lv1, lv2);
@@ -139,9 +139,6 @@ std::vector<ExtendedTrack> MinvTask::getExtendedTracks(const ROFRecord& rof,
                                                        gsl::span<const Cluster> tfClusters) const
 {
   const auto mchTracks = tfTracks.subspan(rof.getFirstIdx(), rof.getNEntries());
-  // std::cout << "CLUSTERS SIZE TF : " << tfClusters.size() << std::endl;  // tous les clusters
-  // std::cout << "TRACKS SIZE TF : " << tfTracks.size() << std::endl;
-  // std::cout << "MCHTRACKS SIZE TF : " << mchTracks.size() << std::endl;
   return convert(mchTracks, tfClusters);
 }
 
@@ -158,20 +155,6 @@ void MinvTask::run(ProcessingContext& pc)
   ofstream file;
   file.open("IDENTITY.txt");
 
-  //{1, 1, 1, 1, 1, 1, 2, 2, 2, 2} is trackable
-  //{1, 1, 1, 1, 1, 1, 1, 1, 1, 1} is trackable
-  //{1, 1, 1, 1, 1, 1, 1, 1, 1, 0} is trackable (idem Ch 7, 8, 9)
-  //{1, 0, 1, 0, 1, 0, 1, 0, 1, 0} is trackable (idem inverse)
-  //{1, 1, 1, 1, 1, 1, 1, 1, 0, 0} is not trackable (idem St 4)
-  //{0, 0, 1, 1, 1, 1, 1, 1, 1, 1} is not trackable (idem St 2, 3 ...)
-  //{0, 0, 1, 1, 1, 1, 0, 2, 0, 0} is not trackable
-  //{0, 0, 1, 1, 1, 1, 2, 2, 0, 0} is not trackable
-  //{1, 1, 1, 1, 1, 1, 0, 2, 0, 0} is not trackable (moreCandidates true and false)
-  //{1, 1, 1, 1, 1, 1, 0, 1, 0, 1} is not trackable (moreCandidates = false)
-  //{1, 1, 1, 1, 1, 1, 0, 1, 0, 1} is trackable (moreCandidates = true)
-  // need at least one hit per station to be trackable
-  // for moreCandidates = false : need one hit per chamber for nb 7, 8, 9, 10
-
   std::vector<Cluster> clust;
   int De_ID;
   int Ch;
@@ -180,8 +163,8 @@ void MinvTask::run(ProcessingContext& pc)
   double compt_t2 = 0.;
   double compt_clust1 = 0.;
   double compt_clust2 = 0.;
-
-  std::ifstream jsn("$HOME/alice/yoursimulationdirectory/geom.json");
+  
+  std::ifstream jsn(geomFileName.c_str());
   auto transformcreat = o2::mch::geo::transformationFromJSON(jsn);
 
   std::array<int, 10> ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ClusterperChamber
@@ -194,16 +177,10 @@ void MinvTask::run(ProcessingContext& pc)
       auto etrack = etracks[ext];
       clust = etrack.getClusters();
       mHistogrammer.DEtest(clust.size());
-      file << "TEST : " << clust.size() << "\n";
       ClustperChamber = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
       std::vector<Cluster> clst_survivors;
       for (auto clst = 0; clst < clust.size(); clst++) {
         compt_clust1 += 1;
-        // file << "================================="
-        //  << "\n";
-        // file << "Ch " << Ch_ID[clst] << "\n";
-        // file << clust[clst].getIdAsString() << "\n";
-        // file << clust[clst] << "\n";
         De_ID = clust[clst].getDEId();
         Ch = clust[clst].getChamberId();
         auto T3D = transformcreat(clust[clst].getDEId());
@@ -237,11 +214,6 @@ void MinvTask::run(ProcessingContext& pc)
         } else {
           continue;
         }
-        // file << "SOLAR ID B : " << c_B.getSolarId() << "\n";
-        // file << "DE ID : " << De_ID << "\n";
-        // file << "DS INDEX B : " << DsIndexB << " & DS INDEX NB : " << DsIndexNB << "\n";
-        // file << "SOLAR INDEX B : " << SolarIndexB << " & SOLAR INDEX NB : " << SolarIndexNB << "\n";
-        // file << "---------------------------------------------" << "\n";
 
         // code for removing part of the detectors are organized by levels (DE, Solar...)
         // work level by level, not all at once 
@@ -297,7 +269,6 @@ void MinvTask::run(ProcessingContext& pc)
     dump(etrackables);
     fillHistos(etrackables);
   }
-  //file << compt_t2 << " are trackables on " << 59196 << "\n";
   file << compt_clust2 << " clusters have survived over " << compt_clust1 << "\n";
   auto rapport = compt_t2 * 100 / compt_clust1;
   double limit = 10.;

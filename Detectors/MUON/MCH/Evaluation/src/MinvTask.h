@@ -63,6 +63,7 @@ class MinvTask
   std::vector<TH1*> mHistos;
   std::vector<TH2*> mHistos_2;
   Histogrammer mHistogrammer;
+  std::string geomFileName;
 };
 } // namespace o2::mch::eval
 
