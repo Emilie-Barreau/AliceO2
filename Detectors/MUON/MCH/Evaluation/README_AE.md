@@ -26,7 +26,7 @@ HOW TO USE IT :
 - Compile the code (aliBuild or ninja)
 - Run the code **inside your simulation directory**
   - KineReader code : `$HOME/alice/sw/BUILD/O2-latest/O2/stage/bin/o2-mch-kine-reader`
-  - MinvTask code : `o2-mch-tracks-reader-workflow | o2-mch-minv-workflow --geomfile yourpathtoyourgeom.jsonfile/geom.json -b` your geom.json file is created during the simulation process, you can get it from the --geomfile option 
+  - MinvTask code : `o2-mch-tracks-reader-workflow | o2-mch-minv-workflow --geomfile yourpathtoyourgeomfile/geom.json -b` your geom.json file is created during the simulation process, you can get it from the --geomfile option 
 - In the acceff.C code, check the name of your fgen, freco and freco_cut (should be the name of your root files from previous codes)
 - In root environment : `.x $HOME/alice/O2/Detectors/MUON/MCH/Evaluation/src/acceff.C`
 - Change the histogram parameters if needed and root again
